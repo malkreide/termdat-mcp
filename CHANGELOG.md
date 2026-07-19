@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Documentation aligned with the Swiss Public Data MCP Portfolio convention:
+  bilingual language cross-links, extended badge row (version, MCP, no-auth),
+  canonical section order, and new `Features`, `Prerequisites`, `Quickstart`,
+  `Configuration`, `Project Structure`, `Safety & Limits`, `Contributing` and
+  `Author` sections in both `README.md` and `README.de.md`.
+
 ## [0.1.0] — 2026-07-19
 
 ### Added

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "termdat-mcp"
+version = "0.1.0"
+description = "MCP server for TERMDAT — the terminology database of the Swiss Federal Administration"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "malkreide" }]
+keywords = ["mcp", "model-context-protocol", "llm", "swiss-open-data", "terminology", "termdat"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: German",
+  "Natural Language :: French",
+  "Natural Language :: Italian",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = ["mcp>=1.2.0", "httpx>=0.27", "pydantic>=2.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff>=0.5"]
+
+[project.scripts]
+termdat-mcp = "termdat_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/malkreide/termdat-mcp"
+Portfolio = "https://github.com/malkreide/swiss-public-data-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/termdat_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = ["live: hits the real TERMDAT API (excluded from CI)"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"

@@ -248,6 +248,8 @@ Siehe [SECURITY.md](SECURITY.md) für Sicherheits-Posture, Härtungskontrollen u
 
 Issues und Pull Requests sind willkommen. Bitte Tools read-only halten, vor dem Einreichen `ruff check` und die Offline-Testsuite laufen lassen und für nutzersichtbare Änderungen einen Eintrag unter `[Unreleased]` in der `CHANGELOG.md` ergänzen.
 
+Maintainer: siehe [PUBLISHING.md](PUBLISHING.md) für den Schritt-für-Schritt-PyPI-Release-Prozess (Trusted Publishing via GitHub Release).
+
 ## Lizenz
 
 MIT für diesen Server — siehe [LICENSE](LICENSE). Die TERMDAT-Inhalte unterliegen den Bedingungen der Bundeskanzlei.

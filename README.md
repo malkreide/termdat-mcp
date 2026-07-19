@@ -4,6 +4,7 @@
 # 🏷️ termdat-mcp
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![CI](https://github.com/malkreide/termdat-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/malkreide/termdat-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-8A2BE2.svg)](https://modelcontextprotocol.io/)
@@ -203,6 +204,29 @@ termdat-mcp/
 
 **Rule of thumb:** *change one variable per probe call, or the API will confess to a crime it did not commit.*
 
+## Project Phase
+
+This server is in **Phase 1 (read-only)**. All tools are annotated
+`readOnlyHint: true` / `destructiveHint: false` and only ever query the public
+TERMDAT v2 API — there are no write, send, or filesystem capabilities.
+
+| Phase | Scope | Status |
+|---|---|---|
+| **1 — Read-only** | Search, translate and check administrative designations | ✅ current |
+| 2 — Write-capable | (none planned) | — |
+| 3 — Multi-agent | (none planned) | — |
+
+A transition to a later phase would require a re-audit and human-in-the-loop
+controls before any write-capable tool is added.
+
+## MCP Protocol Version
+
+The protocol version is negotiated at the `initialize` handshake by the
+[`mcp`](https://pypi.org/project/mcp/) Python SDK (pinned to `>=1.2.0` in
+`pyproject.toml`). The SDK is kept current via monthly Dependabot PRs
+(`.github/dependabot.yml`); protocol-relevant bumps are noted in
+[`CHANGELOG.md`](CHANGELOG.md).
+
 ## Testing
 
 ```bash
@@ -214,6 +238,10 @@ PYTHONPATH=src ruff check src tests
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the security posture, hardening controls, and how to report a vulnerability.
 
 ## Contributing
 

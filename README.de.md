@@ -4,6 +4,7 @@
 # 🏷️ termdat-mcp
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![CI](https://github.com/malkreide/termdat-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/malkreide/termdat-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-8A2BE2.svg)](https://modelcontextprotocol.io/)
@@ -203,6 +204,30 @@ termdat-mcp/
 
 **Faustregel:** *Pro Probe-Call nur eine Variable ändern — sonst gesteht die API eine Tat, die sie nicht begangen hat.*
 
+## Projektphase
+
+Dieser Server ist in **Phase 1 (read-only)**. Alle Tools sind mit
+`readOnlyHint: true` / `destructiveHint: false` annotiert und fragen
+ausschliesslich die öffentliche TERMDAT-v2-API ab — es gibt keine Schreib-,
+Sende- oder Dateisystem-Fähigkeiten.
+
+| Phase | Umfang | Status |
+|---|---|---|
+| **1 — Read-only** | Verwaltungsbenennungen suchen, übersetzen und prüfen | ✅ aktuell |
+| 2 — Schreibfähig | (nicht geplant) | — |
+| 3 — Multi-Agent | (nicht geplant) | — |
+
+Ein Übergang in eine spätere Phase würde ein Re-Audit und Human-in-the-Loop-
+Kontrollen erfordern, bevor ein schreibfähiges Tool hinzukommt.
+
+## MCP-Protokoll-Version
+
+Die Protokollversion wird beim `initialize`-Handshake vom
+[`mcp`](https://pypi.org/project/mcp/)-Python-SDK ausgehandelt (in
+`pyproject.toml` auf `>=1.2.0` gepinnt). Das SDK wird über monatliche
+Dependabot-PRs aktuell gehalten (`.github/dependabot.yml`);
+protokollrelevante Bumps werden in [`CHANGELOG.md`](CHANGELOG.md) vermerkt.
+
 ## Testing
 
 ```bash
@@ -214,6 +239,10 @@ PYTHONPATH=src ruff check src tests
 ## Changelog
 
 Siehe [CHANGELOG.md](CHANGELOG.md).
+
+## Sicherheit
+
+Siehe [SECURITY.md](SECURITY.md) für Sicherheits-Posture, Härtungskontrollen und wie Schwachstellen gemeldet werden.
 
 ## Mitwirken
 

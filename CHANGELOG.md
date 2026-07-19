@@ -6,6 +6,17 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`): ruff + offline
+  pytest on Python 3.10–3.13, with a CI status badge in both READMEs.
+- Dependabot config (`.github/dependabot.yml`): monthly `pip` and
+  `github-actions` updates to keep the `mcp` SDK and workflow actions current.
+- `SECURITY.md` / `SECURITY.de.md`: security posture, accepted-risk decisions,
+  and vulnerability-reporting process; linked from both READMEs.
+- `.gitignore` for the Python project.
+- `Project Phase` and `MCP Protocol Version` sections in both READMEs, matching
+  the portfolio convention.
+
 ### Changed
 - Documentation aligned with the Swiss Public Data MCP Portfolio convention:
   bilingual language cross-links, extended badge row (version, MCP, no-auth),

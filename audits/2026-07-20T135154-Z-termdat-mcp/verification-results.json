@@ -1,0 +1,408 @@
+{
+  "audit_meta": {
+    "server_name": "termdat-mcp",
+    "run_id": "2026-07-20T135154-Z-termdat-mcp",
+    "started_at": "2026-07-20T13:51:54.440493+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "1.0.0",
+    "output_dir": "/home/user/termdat-mcp/audits/2026-07-20T135154-Z-termdat-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/root/.claude/skills/mcp-audit/checks",
+    "audit_date": "2026-07-20",
+    "catalog_version": "hash:091f446b2796"
+  },
+  "results": {
+    "ARCH-001": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "7 tools all snake_case: search_terms, translate_term, check_terms, get_entries, list_collections, list_classifications, api_status (server.py)",
+        "No spaces/dots/special chars; docstrings carry use-case + scope caveats"
+      ],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "Rich docstrings on search_terms/translate_term/check_terms with scope caveats and differentiation"
+      ],
+      "gaps": [
+        "Median description length ~90 chars (list_collections/api_status are one-liners), just under the 100-char bar",
+        "No formal <use_case> tag (contextual equivalent only)"
+      ]
+    },
+    "ARCH-004": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Dual transport selectable via TERMDAT_MCP_TRANSPORT (server + __main__)",
+        "Tools are transport-agnostic; no direct request access"
+      ],
+      "gaps": [
+        "Config read directly from os.environ, not a pydantic-settings object",
+        "Module-global mcp and _client instead of a settings/lifespan-provided instance"
+      ]
+    },
+    "ARCH-007": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "Tools return self-contained results (TermEntry/TranslationHit), not pointers"
+      ],
+      "gaps": [
+        "check_terms iterates up to 25 terms sequentially; no asyncio.gather parallelisation"
+      ]
+    },
+    "ARCH-008": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "Server exposes Tools primitive only"
+      ],
+      "gaps": [
+        "No Resources or Prompts; no README justification for tools-only",
+        "Static vocabularies (list_collections/list_classifications) are Resource-migration candidates"
+      ]
+    },
+    "ARCH-011": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "All mandatory top-level files present (README.md, README.de.md, CHANGELOG.md, LICENSE, pyproject.toml)",
+        "src/ layout, tests/, .github/workflows/ (ci.yml + publish.yml) present"
+      ],
+      "gaps": [
+        "7 tools live in a single server.py; catalog suggests a tools/ split for >5 tools",
+        "CI workflow named ci.yml, catalog names test.yml (cosmetic)"
+      ]
+    },
+    "ARCH-012": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "CHANGELOG.md in Keep-a-Changelog format; README has 'MCP Protocol Version' section; Dependabot active"
+      ],
+      "gaps": [
+        "protocolVersion is negotiated by the FastMCP SDK at the initialize handshake, not pinned in server code"
+      ]
+    },
+    "OBS-001": {
+      "category": "OBS",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Tool argument errors raised as ValueError -> FastMCP returns them as tool execution errors (isError), not JSON-RPC errors",
+        "api_status catches upstream failure and returns a structured reachable=false result"
+      ],
+      "gaps": [
+        "No explicit isError construction; relies on FastMCP default exception handling",
+        "Error-path test coverage is thin"
+      ]
+    },
+    "OBS-002": {
+      "category": "OBS",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "api_status no longer forwards the raw exception text to the model (masked in this audit run)",
+        "No traceback.format_exc()/exc_info in any tool return"
+      ],
+      "gaps": [
+        "FastMCP 1.28.1 exposes no mask_error_details flag; raised ValueError/RuntimeError messages still reach the client as tool-error text"
+      ]
+    },
+    "OBS-003": {
+      "category": "OBS",
+      "severity": "medium",
+      "status": "fail",
+      "evidence": [
+        "No print()/stdout writes in src/ (good for stdio hygiene, OBS-004)"
+      ],
+      "gaps": [
+        "No structured logging library (structlog/loguru) in dependencies; no logging at all",
+        "No per-call bound context (tool name, correlation id)"
+      ]
+    },
+    "OPS-001": {
+      "category": "OPS",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "tests/test_client.py (respx-mocked) + tests/test_live.py (live-marked); live marker registered in pyproject; CI runs pytest -m 'not live'"
+      ],
+      "gaps": [
+        "12 offline tests total across 7 tools (< 5 per tool)",
+        "No separate nightly/manual live-test workflow"
+      ]
+    },
+    "OPS-002": {
+      "category": "OPS",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "README has all 8 mandatory sections incl. ASCII architecture diagram and Known Limitations; README.de.md parallel; CHANGELOG Keep-a-Changelog"
+      ],
+      "gaps": [
+        "No separate bilingual CONTRIBUTING.md (only a Contributing section in the READMEs)"
+      ]
+    },
+    "SCALE-002": {
+      "category": "SCALE",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Server is single-instance and not cloud-deployed (deployment: local-stdio; is_cloud_deployed=false)"
+      ],
+      "gaps": [
+        "SSE transport is offered but there is no sticky-session/shared-state design, session TTL or failover story"
+      ]
+    },
+    "SDK-001": {
+      "category": "SDK",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Single shared httpx.AsyncClient is created lazily and reused across calls (client.py _client()) — no per-call client"
+      ],
+      "gaps": [
+        "No FastMCP lifespan; the shared httpx client is never closed on shutdown (aclose() exists but is unwired)"
+      ]
+    },
+    "SDK-003": {
+      "category": "SDK",
+      "severity": "medium",
+      "status": "partial",
+      "evidence": [
+        "Most tools are single upstream calls (<2s)"
+      ],
+      "gaps": [
+        "No ctx: Context injection anywhere; check_terms (up to 25 sequential calls) can exceed 2s with no progress reporting"
+      ]
+    },
+    "SDK-004": {
+      "category": "SDK",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "stdio is the default transport; SSE is opt-in and not cloud-deployed"
+      ],
+      "gaps": [
+        "No CORS middleware configured for the SSE transport; Mcp-Session-Id is not explicitly exposed; allow_origins not restricted"
+      ]
+    },
+    "SEC-005": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "All egress targets a single hardcoded trusted host (api.termdat.bk.admin.ch); no user-controlled hostnames"
+      ],
+      "gaps": [
+        "No DNS pinning; httpx resolves per request (TOCTOU-theoretical only, single trusted host)"
+      ]
+    },
+    "SEC-007": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Server runs locally via stdio by default; no container is shipped"
+      ],
+      "gaps": [
+        "No Dockerfile / k8s manifests, so non-root USER, readOnlyRootFilesystem, cap-drop, seccomp are not yet expressed"
+      ]
+    },
+    "SEC-018": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "Language codes whitelisted (normalise_language); search fields whitelisted; empty/25-term guards; Pydantic-typed args and returns"
+      ],
+      "gaps": [
+        "max_results has no ge/le bound",
+        "No min/max_length on string args",
+        "strict=True / extra='forbid' not set on tool inputs"
+      ]
+    },
+    "SEC-021": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "partial",
+      "evidence": [
+        "All requests go to the hardcoded BASE_URL/SPEC_URL (single host); no user-controlled URLs"
+      ],
+      "gaps": [
+        "Egress host is a module constant, not a frozenset allow-list with an assert_host_allowed pre-request check; no network-egress docs"
+      ]
+    },
+    "ARCH-003": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "check_terms returns verdict not_found + note; CheckResult.caveat states absence != incorrect",
+        "Documented exact-lookup design (no fuzzy fallback) fits the sensitive-lookup path"
+      ],
+      "gaps": []
+    },
+    "ARCH-005": {
+      "category": "ARCH",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No secrets anywhere (unauthenticated API); no secret defaults in os.environ.get",
+        "/.env guarded by .gitignore"
+      ],
+      "gaps": [
+        "No gitleaks/trufflehog CI (low value: server has no secrets)"
+      ]
+    },
+    "ARCH-006": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "7 tools (<=12); translate_term/check_terms are high-level use-cases, not 1:1 endpoint maps"
+      ],
+      "gaps": []
+    },
+    "ARCH-009": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "All 7 tools annotated readOnlyHint/destructiveHint/openWorldHint via _READ_ONLY (server.py:30)",
+        "README documents read-only annotations"
+      ],
+      "gaps": []
+    },
+    "CH-004": {
+      "category": "CH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "Every response Envelope carries source=ATTRIBUTION naming TERMDAT, BK and the licence caveat (models.py)",
+        "README documents the data source and licence"
+      ],
+      "gaps": []
+    },
+    "OBS-004": {
+      "category": "OBS",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No print()/logging/stdout writes in src/ (grep clean); stdout stays clean for JSON-RPC"
+      ],
+      "gaps": []
+    },
+    "OPS-003": {
+      "category": "OPS",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "README declares Phase 1 (read-only); annotations match; phase-transition prerequisites documented"
+      ],
+      "gaps": [
+        "Roadmap lives in the README, not a separate file"
+      ]
+    },
+    "SDK-002": {
+      "category": "SDK",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "Pydantic 2.7; explicit BaseModel return types; shared Envelope (source/provenance/retrieved_at); Literal types for provenance/verdict/kind"
+      ],
+      "gaps": []
+    },
+    "SEC-004": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "All egress targets the hardcoded HTTPS BASE_URL; no user-controlled URL/host -> no SSRF surface"
+      ],
+      "gaps": []
+    },
+    "SEC-006": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Default transport is stdio; SSE only via TERMDAT_MCP_TRANSPORT; default start opens no TCP port",
+        "README documents local stdio primary + cloud separately"
+      ],
+      "gaps": []
+    },
+    "SEC-008": {
+      "category": "SEC",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "No pre/postinstall hooks; install shown transparently (uvx termdat-mcp)",
+        "PyPI OIDC Trusted Publishing (publish.yml) active"
+      ],
+      "gaps": []
+    },
+    "SEC-013": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "No API keys/credentials (unauthenticated public API); nothing to store"
+      ],
+      "gaps": []
+    },
+    "SEC-016": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "Default HOST is 127.0.0.1 (__main__.py:38); 0.0.0.0 is explicit opt-in and warns on stderr outside a container (_warn_on_public_binding)",
+        "README + SECURITY document the local/container differentiation"
+      ],
+      "gaps": [
+        "Remediated within this audit run (was 0.0.0.0 default)"
+      ]
+    },
+    "SEC-019": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "Read-only, public-data server with no send/write capability -> at most one leg of the lethal trifecta",
+        "SECURITY.md documents read-only/no-write posture"
+      ],
+      "gaps": []
+    },
+    "SEC-020": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No os.system/subprocess/shell=True/eval/exec/os.popen anywhere in src/ (grep clean)"
+      ],
+      "gaps": []
+    },
+    "SEC-009": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "n/a",
+      "evidence": [
+        "auth_model=none: no user identity and no authenticated sessions to bind"
+      ],
+      "gaps": [
+        "N/A per profile — mirrors fedlex ADR 0002 (accepted, no-auth)"
+      ]
+    }
+  }
+}

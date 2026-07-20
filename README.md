@@ -97,6 +97,11 @@ All configuration is via environment variables. Defaults are safe for local use.
 | `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (local) or `sse` / `streamable-http` / `http` (cloud) |
 | `HOST` | `127.0.0.1` | Bind host (SSE transport only). Loopback by default; set `HOST=0.0.0.0` **only** inside a container |
 | `PORT` | `8000` | Bind port (SSE transport only) |
+| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | SSE only: explicit allowed browser origins (default-deny; never a wildcard in production) |
+| `TERMDAT_MCP_LOG_LEVEL` | `INFO` | structlog level (JSON to stderr) |
+| `TERMDAT_MCP_VOCAB_TTL` | `86400` | Vocabulary cache TTL in seconds |
+
+Configuration is loaded once into a typed `Settings` object (pydantic-settings).
 
 Cloud (Render / Railway):
 
@@ -117,6 +122,11 @@ TERMDAT_MCP_TRANSPORT=sse PORT=8000 termdat-mcp   # exposes /sse
 | `api_status` | Availability; never returns silently empty |
 
 All tools are annotated `readOnlyHint: true`, `destructiveHint: false`.
+
+**MCP primitives.** This server uses only the **Tools** primitive. TERMDAT answers
+are live queries with no stable resource hierarchy to expose as *Resources*, and
+there are no server-authored *Prompts*. The seven tools are small and closely
+related, so they live in a single `server.py` rather than a `tools/` package.
 
 ## Architecture
 
@@ -179,6 +189,11 @@ termdat-mcp/
 - **No silent empties.** `api_status` and error paths surface failures instead of returning an empty result that looks complete.
 - **Truncation is explicit.** `MaxEntryCount` is always sent and `truncated` is reported (see Known Limitations).
 - **Licence caution.** TERMDAT content carries no licence statement; every response repeats this in `source`. Clarify terms with the Federal Chancellery before republishing downstream.
+- **Egress allow-list.** Requests can only reach `api.termdat.bk.admin.ch` (HTTPS), enforced before every call by a frozen `ALLOWED_HOSTS` set — no user input can redirect egress. See [`docs/network-egress.md`](docs/network-egress.md).
+- **Loopback by default.** SSE binds to `127.0.0.1`; `0.0.0.0` is an explicit container opt-in that warns on stderr. SSE also sets default-deny CORS, exposing only `Mcp-Session-Id`.
+- **Errors are masked.** Upstream/internal error detail is logged to stderr (structlog JSON) and never returned to the model.
+- **Accepted risks (ADRs):** DNS pinning ([ADR 0001](docs/adr/0001-dns-pinning.md)) and stateful load balancing ([ADR 0002](docs/adr/0002-scaling-and-deployment.md)) are deliberately deferred — low risk for a single-instance, single-host, no-auth server.
+- **Container.** A hardened, non-root [`Dockerfile`](Dockerfile) is provided for SSE deployments.
 
 ## Known Limitations
 

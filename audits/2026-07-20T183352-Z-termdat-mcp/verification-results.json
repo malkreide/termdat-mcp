@@ -1,0 +1,340 @@
+{
+  "audit_meta": {
+    "server_name": "termdat-mcp",
+    "run_id": "2026-07-20T183352-Z-termdat-mcp",
+    "started_at": "2026-07-20T18:33:52.420301+00:00",
+    "timezone_offset": "Z",
+    "skill_version": "1.0.0",
+    "output_dir": "/home/user/termdat-mcp/audits/2026-07-20T183352-Z-termdat-mcp",
+    "catalog_hash": "091f446b27965044ce658a1d5f4b2cabe2b0ab5661dcc1a53b6be8f1f2e093c0",
+    "catalog_dir": "/root/.claude/skills/mcp-audit/checks",
+    "audit_date": "2026-07-20",
+    "catalog_version": "hash:091f446b2796"
+  },
+  "results": {
+    "ARCH-001": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "7 snake_case tools; use-case-rich docstrings"
+      ],
+      "gaps": []
+    },
+    "ARCH-002": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "Descriptions extended (get_entries etc.); median >100 chars with use-case context"
+      ],
+      "gaps": []
+    },
+    "ARCH-003": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "check_terms verdict not_found + caveat; documented exact-lookup design"
+      ],
+      "gaps": []
+    },
+    "ARCH-004": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Config via pydantic-settings Settings (settings.py); FastMCP lifespan for shared setup; transport-agnostic tools"
+      ],
+      "gaps": []
+    },
+    "ARCH-005": {
+      "category": "ARCH",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No secrets; .env gitignored; unauthenticated API"
+      ],
+      "gaps": []
+    },
+    "ARCH-006": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "7 high-level tools (<=12), not 1:1 endpoint maps"
+      ],
+      "gaps": []
+    },
+    "ARCH-007": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "check_terms parallelised via asyncio.gather"
+      ],
+      "gaps": []
+    },
+    "ARCH-008": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "README documents Tools-only rationale (no stable Resources; no Prompts)"
+      ],
+      "gaps": []
+    },
+    "ARCH-009": {
+      "category": "ARCH",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "All tools annotated readOnlyHint/destructiveHint/openWorldHint"
+      ],
+      "gaps": []
+    },
+    "ARCH-011": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "All mandatory files/dirs; ci.yml+publish.yml+live.yml; single-file tools rationale documented"
+      ],
+      "gaps": []
+    },
+    "ARCH-012": {
+      "category": "ARCH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "CHANGELOG Keep-a-Changelog; README MCP Protocol Version documents SDK negotiation; Dependabot"
+      ],
+      "gaps": []
+    },
+    "CH-004": {
+      "category": "CH",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "Every response Envelope carries source with attribution + licence caveat"
+      ],
+      "gaps": []
+    },
+    "OBS-001": {
+      "category": "OBS",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Execution errors -> FastMCP isError; error-path tests in test_server.py"
+      ],
+      "gaps": []
+    },
+    "OBS-002": {
+      "category": "OBS",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Client + api_status mask upstream/internal detail; logged to stderr; test asserts no leak"
+      ],
+      "gaps": []
+    },
+    "OBS-003": {
+      "category": "OBS",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "structlog JSON to stderr (logging_config.py), per-call context; no stdout writes"
+      ],
+      "gaps": []
+    },
+    "OBS-004": {
+      "category": "OBS",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No print()/stdout writes in src/; logging pinned to stderr"
+      ],
+      "gaps": []
+    },
+    "OPS-001": {
+      "category": "OPS",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "28 offline respx tests (per-tool + error paths); live marker; CI runs not-live; scheduled live.yml"
+      ],
+      "gaps": []
+    },
+    "OPS-002": {
+      "category": "OPS",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "8 README sections + ASCII diagram + limits; bilingual CONTRIBUTING.md/.de.md"
+      ],
+      "gaps": []
+    },
+    "OPS-003": {
+      "category": "OPS",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "README declares Phase 1; annotations match; transition prerequisites documented"
+      ],
+      "gaps": []
+    },
+    "SCALE-002": {
+      "category": "SCALE",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Single-instance decision + re-eval triggers documented in ADR 0002 (accepted risk)"
+      ],
+      "gaps": []
+    },
+    "SDK-001": {
+      "category": "SDK",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "FastMCP lifespan owns the shared httpx client and closes it on shutdown; no per-call client"
+      ],
+      "gaps": []
+    },
+    "SDK-002": {
+      "category": "SDK",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "Pydantic v2 typed returns; shared Envelope; Literal enums"
+      ],
+      "gaps": []
+    },
+    "SDK-003": {
+      "category": "SDK",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "check_terms takes ctx: Context and reports progress; ctx available for long-running tool"
+      ],
+      "gaps": []
+    },
+    "SDK-004": {
+      "category": "SDK",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "SSE app configures CORS exposing Mcp-Session-Id, default-deny explicit origins (__main__._run_sse)"
+      ],
+      "gaps": []
+    },
+    "SEC-004": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "Fixed HTTPS egress host; no user-controlled URL -> no SSRF surface"
+      ],
+      "gaps": []
+    },
+    "SEC-005": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "DNS pinning accepted-risk with rationale + triggers in ADR 0001 (single trusted host)"
+      ],
+      "gaps": []
+    },
+    "SEC-006": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Default transport stdio; SSE only via env; no TCP port on default start"
+      ],
+      "gaps": []
+    },
+    "SEC-007": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Hardened non-root Dockerfile (USER 10001); k8s securityContext deferred until k8s deployment (not deployed)"
+      ],
+      "gaps": []
+    },
+    "SEC-008": {
+      "category": "SEC",
+      "severity": "medium",
+      "status": "pass",
+      "evidence": [
+        "No install hooks; transparent install; PyPI OIDC Trusted Publishing"
+      ],
+      "gaps": []
+    },
+    "SEC-009": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "n/a",
+      "evidence": [
+        "No auth model, no user sessions to bind (ADR 0002 posture; mirrors fedlex ADR 0002)"
+      ],
+      "gaps": []
+    },
+    "SEC-013": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "No API keys/credentials (unauthenticated public API)"
+      ],
+      "gaps": []
+    },
+    "SEC-016": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "Default HOST 127.0.0.1; 0.0.0.0 explicit opt-in with stderr warning (_warn_on_public_binding)"
+      ],
+      "gaps": []
+    },
+    "SEC-018": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "Tool-arg bounds: max_results 1-100, string/list length limits; schema-bounds test"
+      ],
+      "gaps": []
+    },
+    "SEC-019": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "Read-only, public data, no send/write -> at most one trifecta leg; SECURITY.md"
+      ],
+      "gaps": []
+    },
+    "SEC-020": {
+      "category": "SEC",
+      "severity": "critical",
+      "status": "pass",
+      "evidence": [
+        "No os.system/subprocess/eval/exec anywhere in src/"
+      ],
+      "gaps": []
+    },
+    "SEC-021": {
+      "category": "SEC",
+      "severity": "high",
+      "status": "pass",
+      "evidence": [
+        "frozenset ALLOWED_HOSTS + assert_host_allowed before each request; docs/network-egress.md; egress tests"
+      ],
+      "gaps": []
+    }
+  }
+}

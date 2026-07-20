@@ -11,12 +11,32 @@ import asyncio
 import time
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
+
+from .logging_config import log
 
 BASE_URL = "https://api.termdat.bk.admin.ch/v2"
 SPEC_URL = "https://api.termdat.bk.admin.ch/swagger/v2/swagger.json"
 VOCAB_TTL_SECONDS = 24 * 60 * 60
+
+# Code-layer egress allow-list (SEC-021): the only host this server may reach.
+# Enforced before every outbound request; not mutable at runtime.
+ALLOWED_HOSTS = frozenset({"api.termdat.bk.admin.ch"})
+
+
+class EgressNotAllowed(RuntimeError):
+    """Raised when a request targets a host outside the egress allow-list."""
+
+
+def assert_host_allowed(url: str) -> None:
+    """Reject any URL whose scheme is not https or whose host is not allow-listed."""
+    parts = urlsplit(url)
+    if parts.scheme != "https":
+        raise EgressNotAllowed(f"non-https egress blocked: {parts.scheme!r}")
+    if parts.hostname not in ALLOWED_HOSTS:
+        raise EgressNotAllowed(f"host not in egress allow-list: {parts.hostname!r}")
 
 VALID_LANGUAGES = ("DE", "FR", "IT", "EN", "RM", "LA")
 
@@ -59,6 +79,7 @@ async def fetch_with_retry(
     http: httpx.AsyncClient, url: str, params: dict[str, Any] | None = None, *, max_attempts: int = 4
 ) -> httpx.Response:
     """GET with exponential backoff: 2s, 4s, 8s. 4xx except 429 fails fast."""
+    assert_host_allowed(url)  # SEC-021: enforce the egress allow-list per request
     last_error: Exception | None = None
     for attempt in range(max_attempts):
         if attempt > 0:
@@ -72,7 +93,12 @@ async def fetch_with_retry(
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status is not None and 400 <= status < 500 and status != 429:
                 raise
-    raise UpstreamUnavailable(f"TERMDAT unreachable after {max_attempts} attempts: {last_error}")
+            log.warning(
+                "termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__
+            )
+    # OBS-002: log the concrete error to stderr, but do not leak it to the model.
+    log.error("termdat.unreachable", attempts=max_attempts, error=str(last_error))
+    raise UpstreamUnavailable(f"TERMDAT unreachable after {max_attempts} attempts.")
 
 
 def flatten_entry(raw: dict) -> dict:

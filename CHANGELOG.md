@@ -7,6 +7,12 @@ versioning follows [SemVer](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+- PyPI packaging readiness: `Publish to PyPI` workflow
+  (`.github/workflows/publish.yml`) using PyPI Trusted Publishing (OIDC) on
+  GitHub Release, and a step-by-step `PUBLISHING.md` guide linked from the READMEs.
+- Richer distribution metadata in `pyproject.toml`: `LICENSE`-referenced license,
+  per-version Python classifiers (3.10–3.13), `OS Independent`, and
+  `Repository` / `Issues` / `Changelog` project URLs.
 - GitHub Actions CI workflow (`.github/workflows/ci.yml`): ruff + offline
   pytest on Python 3.10–3.13, with a CI status badge in both READMEs.
 - Dependabot config (`.github/dependabot.yml`): monthly `pip` and

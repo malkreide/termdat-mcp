@@ -247,6 +247,8 @@ See [SECURITY.md](SECURITY.md) for the security posture, hardening controls, and
 
 Issues and pull requests are welcome. Please keep tools read-only, run `ruff check` and the offline test suite before submitting, and add a `CHANGELOG.md` entry under `[Unreleased]` for user-facing changes.
 
+Maintainers: see [PUBLISHING.md](PUBLISHING.md) for the step-by-step PyPI release process (Trusted Publishing via GitHub Release).
+
 ## License
 
 MIT for this server — see [LICENSE](LICENSE). TERMDAT content remains subject to the Federal Chancellery's terms.

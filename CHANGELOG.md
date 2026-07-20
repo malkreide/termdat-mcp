@@ -6,31 +6,9 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-- PyPI packaging readiness: `Publish to PyPI` workflow
-  (`.github/workflows/publish.yml`) using PyPI Trusted Publishing (OIDC) on
-  GitHub Release, and a step-by-step `PUBLISHING.md` guide linked from the READMEs.
-- Richer distribution metadata in `pyproject.toml`: `LICENSE`-referenced license,
-  per-version Python classifiers (3.10–3.13), `OS Independent`, and
-  `Repository` / `Issues` / `Changelog` project URLs.
-- GitHub Actions CI workflow (`.github/workflows/ci.yml`): ruff + offline
-  pytest on Python 3.10–3.13, with a CI status badge in both READMEs.
-- Dependabot config (`.github/dependabot.yml`): monthly `pip` and
-  `github-actions` updates to keep the `mcp` SDK and workflow actions current.
-- `SECURITY.md` / `SECURITY.de.md`: security posture, accepted-risk decisions,
-  and vulnerability-reporting process; linked from both READMEs.
-- `.gitignore` for the Python project.
-- `Project Phase` and `MCP Protocol Version` sections in both READMEs, matching
-  the portfolio convention.
+## [0.1.0] — 2026-07-20
 
-### Changed
-- Documentation aligned with the Swiss Public Data MCP Portfolio convention:
-  bilingual language cross-links, extended badge row (version, MCP, no-auth),
-  canonical section order, and new `Features`, `Prerequisites`, `Quickstart`,
-  `Configuration`, `Project Structure`, `Safety & Limits`, `Contributing` and
-  `Author` sections in both `README.md` and `README.de.md`.
-
-## [0.1.0] — 2026-07-19
+First public release, published to PyPI.
 
 ### Added
 - Seven read-only tools over the TERMDAT public v2 API: `search_terms`,
@@ -40,6 +18,22 @@ versioning follows [SemVer](https://semver.org/).
   stale-serve fallback on refresh failure.
 - Retry with exponential backoff (2/4/8 s); 4xx except 429 fails fast.
 - Dual transport: stdio and SSE.
+- PyPI packaging: `Publish to PyPI` workflow (`.github/workflows/publish.yml`)
+  using PyPI Trusted Publishing (OIDC) on GitHub Release, and a step-by-step
+  `PUBLISHING.md` guide linked from the READMEs.
+- Distribution metadata in `pyproject.toml`: `LICENSE`-referenced license,
+  per-version Python classifiers (3.10–3.13), `OS Independent`, and
+  `Repository` / `Issues` / `Changelog` project URLs.
+- GitHub Actions CI workflow (`.github/workflows/ci.yml`): ruff + offline
+  pytest on Python 3.10–3.13, with a CI status badge in both READMEs.
+- Dependabot config (`.github/dependabot.yml`): monthly `pip` and
+  `github-actions` updates to keep the `mcp` SDK and workflow actions current.
+- `SECURITY.md` / `SECURITY.de.md`: security posture, accepted-risk decisions,
+  and vulnerability-reporting process; linked from both READMEs.
+- `.gitignore` for the Python project.
+- Bilingual documentation (`README.md` / `README.de.md`) aligned with the Swiss
+  Public Data MCP Portfolio convention, including `Project Phase` and
+  `MCP Protocol Version` sections.
 
 ### Known findings (live probe 2026-07-19)
 - **`MaxEntryCount` has a silent default of ~25.** Omit it and the response

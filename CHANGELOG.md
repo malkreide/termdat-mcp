@@ -10,15 +10,33 @@ versioning follows [SemVer](https://semver.org/).
 - **SEC-016 (NeighborJack):** the SSE transport now binds to `127.0.0.1` by
   default instead of `0.0.0.0`. Binding to `0.0.0.0` is an explicit opt-in that
   logs a stderr warning when used outside a container. README/SECURITY updated.
-
-### Changed
-- `api_status` no longer forwards the raw upstream exception string to the model
-  (OBS-002 error-detail masking).
+- **SEC-021:** code-layer egress allow-list (`ALLOWED_HOSTS` + `assert_host_allowed`),
+  enforced before every request; `docs/network-egress.md`.
+- **SEC-018:** input bounds at the tool boundary — `max_results` 1–100, plus
+  string/list length limits on `search_term`, `term`, `terms`, `entry_ids`, `fields`.
+- **SEC-007:** hardened non-root `Dockerfile` for SSE deployments.
+- **SEC-005 / SCALE-002:** accepted-risk ADRs for DNS pinning and stateful load
+  balancing (`docs/adr/0001`, `0002`).
 
 ### Added
+- Typed configuration via `pydantic-settings` (`settings.py`); new env vars
+  `TERMDAT_MCP_LOG_LEVEL`, `TERMDAT_MCP_CORS_ORIGINS`, `TERMDAT_MCP_VOCAB_TTL`.
+- Structured logging via `structlog`, pinned to stderr as JSON (`logging_config.py`).
+- FastMCP `lifespan` owning the shared HTTP client (cleanup on shutdown).
+- Explicit CORS for the SSE transport, exposing only `Mcp-Session-Id`.
+- `CONTRIBUTING.md` / `CONTRIBUTING.de.md`; scheduled/manual live-test workflow.
+- Expanded test suite (12 → 28 offline tests): per-tool coverage, error paths,
+  egress allow-list, tool-schema input bounds.
 - MCP best-practice audit against the portfolio catalog (68 checks, 36
-  applicable) under `audits/`: 16 pass, 18 partial, 1 fail (OBS-003), 1 n/a;
-  **production-ready** (no open critical/high failures after the SEC-016 fix).
+  applicable) under `audits/`: **production-ready**; the 19-item hardening
+  backlog from that audit is addressed by the changes above.
+
+### Changed
+- `api_status` and the client no longer forward raw upstream exception strings to
+  the model (OBS-002 error-detail masking); detail goes to the structured log.
+- `check_terms` runs its per-term lookups concurrently (`asyncio.gather`) and
+  reports progress via `ctx` when available (ARCH-007 / SDK-003).
+- Tools grouped rationale + MCP-primitives note documented in the READMEs.
 
 ## [0.1.0] — 2026-07-20
 

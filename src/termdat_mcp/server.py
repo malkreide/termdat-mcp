@@ -3,15 +3,25 @@
 Anchor demo query:
     "What are the official French and Italian names of the education directorates
      of the German-speaking cantons?"
+
+This server exposes seven read-only Tools. It uses only the MCP *Tools* primitive:
+the data has no stable resource hierarchy worth exposing as *Resources* (every
+answer is a live query), and there are no server-authored *Prompts*. See the
+"MCP Primitives" note in the README.
 """
 
 from __future__ import annotations
 
-from typing import Any
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from typing import Annotated, Any
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
+from pydantic import Field
 
 from .client import SEARCH_FIELDS, TermdatClient, normalise_language
+from .logging_config import configure_logging, log
 from .models import (
     CheckResult,
     SearchResult,
@@ -23,11 +33,37 @@ from .models import (
     Vocabulary,
     VocabularyResult,
 )
+from .settings import load_settings
 
-mcp = FastMCP("termdat-mcp")
-_client = TermdatClient()
+settings = load_settings()
+
+# A single shared client for the process lifetime (never one per tool call).
+# The lifespan below owns its shutdown (SDK-001).
+_client = TermdatClient(vocab_ttl=settings.vocab_ttl_seconds)
+
+
+@asynccontextmanager
+async def _lifespan(_server: FastMCP) -> AsyncIterator[dict[str, Any]]:
+    """Own the shared client's lifecycle: log startup, close the client on shutdown."""
+    configure_logging(settings.log_level)
+    log.info("termdat_mcp.startup", transport=settings.transport)
+    try:
+        yield {}
+    finally:
+        await _client.aclose()
+        log.info("termdat_mcp.shutdown")
+
+
+mcp = FastMCP("termdat-mcp", lifespan=_lifespan)
 
 _READ_ONLY: dict[str, Any] = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
+
+# Reusable, constrained argument aliases (SEC-018: bounds at the tool boundary).
+_Term = Annotated[str, Field(min_length=1, max_length=200)]
+_Fields = Annotated[str, Field(max_length=200)]
+_MaxResults = Annotated[int, Field(ge=1, le=100)]
+_EntryIds = Annotated[list[int], Field(min_length=1, max_length=100)]
+_Terms = Annotated[list[str], Field(min_length=1, max_length=25)]
 
 
 def _fields(fields: str) -> tuple[str, ...]:
@@ -37,16 +73,20 @@ def _fields(fields: str) -> tuple[str, ...]:
 
 @mcp.tool(annotations=_READ_ONLY)
 async def search_terms(
-    search_term: str,
+    search_term: _Term,
     in_language: str = "DE",
     out_language: str = "",
     detail: bool = True,
-    fields: str = "Terminus",
+    fields: _Fields = "Terminus",
     collection_ids: list[int] | None = None,
     classification_ids: list[int] | None = None,
-    max_results: int = 25,
+    max_results: _MaxResults = 25,
 ) -> SearchResult:
     """Search TERMDAT for official designations of the Swiss Federal Administration.
+
+    Use this to look up the officially validated German/French/Italian/English name
+    of an authority, department or legal act — for example to check how a body is
+    named in another national language before citing it.
 
     `out_language` adds a target language to every entry's variants — it is purely
     additive and never filters the result set. `fields` is a comma-separated subset
@@ -81,9 +121,13 @@ async def search_terms(
 
 @mcp.tool(annotations=_READ_ONLY)
 async def get_entries(
-    entry_ids: list[int], in_language: str = "DE", out_language: str = ""
+    entry_ids: _EntryIds, in_language: str = "DE", out_language: str = ""
 ) -> SearchResult:
-    """Fetch known TERMDAT entries by their numeric IDs, with full language variants."""
+    """Fetch known TERMDAT entries by their numeric IDs, with full language variants.
+
+    Use this to re-retrieve an entry you already found via `search_terms` (its
+    `entry_id`), e.g. to pull all four national-language designations at once.
+    """
     entries, retrieved_at = await _client.entries(
         entry_ids, in_language, out_language or None
     )
@@ -101,7 +145,7 @@ async def get_entries(
 
 @mcp.tool(annotations=_READ_ONLY)
 async def translate_term(
-    term: str, from_language: str = "DE", to_language: str = "FR", max_results: int = 10
+    term: _Term, from_language: str = "DE", to_language: str = "FR", max_results: _MaxResults = 10
 ) -> TranslationResult:
     """Get the official equivalent of an administrative term in another national language.
 
@@ -149,69 +193,76 @@ async def translate_term(
     )
 
 
+async def _check_one(term: str, lang: str) -> tuple[TermCheck, str]:
+    """Check a single term against validated designations. Returns (result, retrieved_at)."""
+    entries, retrieved_at = await _client.search(
+        term, lang, detail=True, fields=("Terminus",), max_results=10
+    )
+    exact = None
+    for entry in entries:
+        for variant in entry["variants"]:
+            if variant["language"] == lang and variant["name"].casefold() == term.casefold():
+                exact = (entry, variant)
+                break
+        if exact:
+            break
+
+    if exact is None:
+        return (
+            TermCheck(
+                term=term,
+                verdict="not_found",
+                note=(
+                    f"{len(entries)} related entr{'y' if len(entries) == 1 else 'ies'} found, "
+                    "but no exact designation match."
+                ),
+            ),
+            retrieved_at,
+        )
+
+    entry, variant = exact
+    validated = entry["status"].casefold().startswith("valid")
+    return (
+        TermCheck(
+            term=term,
+            verdict="validated" if validated else "found_unvalidated",
+            matched_designation=variant["name"],
+            entry_id=entry["entry_id"],
+            url=entry["url"],
+            note=(variant.get("note") or entry["status"]),
+        ),
+        retrieved_at,
+    )
+
+
 @mcp.tool(annotations=_READ_ONLY)
-async def check_terms(terms: list[str], language: str = "DE") -> CheckResult:
+async def check_terms(terms: _Terms, language: str = "DE", ctx: Context | None = None) -> CheckResult:
     """Check a list of terms against validated TERMDAT designations.
 
     Intended for communication QA: verify that authority names, department titles and
     abbreviations in a draft match the officially validated form. Each term is reported
-    as `validated`, `found_unvalidated` or `not_found`.
+    as `validated`, `found_unvalidated` or `not_found`. Up to 25 terms per call; the
+    lookups run concurrently.
     """
-    if not terms:
-        raise ValueError("terms must not be empty")
-    if len(terms) > 25:
-        raise ValueError("check at most 25 terms per call to stay within upstream rate limits")
+    cleaned = [t.strip() for t in terms if t.strip()]
+    if not cleaned:
+        raise ValueError("terms must contain at least one non-empty value")
 
     lang = normalise_language(language, field="language")
-    results: list[TermCheck] = []
-    retrieved_at = ""
 
-    for term in terms:
-        cleaned = term.strip()
-        if not cleaned:
-            continue
-        entries, retrieved_at = await _client.search(
-            cleaned, lang, detail=True, fields=("Terminus",), max_results=10
-        )
+    async def _run(idx: int, term: str) -> tuple[TermCheck, str]:
+        result = await _check_one(term, lang)
+        if ctx is not None:
+            await ctx.report_progress(progress=idx + 1, total=len(cleaned))
+        return result
 
-        exact = None
-        for entry in entries:
-            for variant in entry["variants"]:
-                if variant["language"] == lang and variant["name"].casefold() == cleaned.casefold():
-                    exact = (entry, variant)
-                    break
-            if exact:
-                break
-
-        if exact is None:
-            results.append(
-                TermCheck(
-                    term=cleaned,
-                    verdict="not_found",
-                    note=(
-                        f"{len(entries)} related entr{'y' if len(entries) == 1 else 'ies'} found, "
-                        "but no exact designation match."
-                    ),
-                )
-            )
-            continue
-
-        entry, variant = exact
-        validated = entry["status"].casefold().startswith("valid")
-        results.append(
-            TermCheck(
-                term=cleaned,
-                verdict="validated" if validated else "found_unvalidated",
-                matched_designation=variant["name"],
-                entry_id=entry["entry_id"],
-                url=entry["url"],
-                note=(variant.get("note") or entry["status"]),
-            )
-        )
+    pairs = await asyncio.gather(*(_run(i, t) for i, t in enumerate(cleaned)))
+    results = [p[0] for p in pairs]
+    retrieved_at = next((p[1] for p in reversed(pairs) if p[1]), "unavailable")
 
     return CheckResult(
         provenance="live_api",
-        retrieved_at=retrieved_at or "unavailable",
+        retrieved_at=retrieved_at,
         language=lang,
         checked=len(results),
         validated=sum(1 for r in results if r.verdict == "validated"),
@@ -256,7 +307,8 @@ async def api_status() -> StatusResult:
         classifications, _, _ = await _client.vocabulary("Classification")
     except Exception:  # noqa: BLE001 — status must never raise; report unreachable instead
         # Deliberately do not forward the raw exception text to the model
-        # (OBS-002: mask upstream/internal error details).
+        # (OBS-002: mask upstream/internal error details). Details go to stderr.
+        log.warning("termdat_mcp.status_unreachable")
         return StatusResult(
             provenance="cached",
             retrieved_at="unavailable",

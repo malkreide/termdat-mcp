@@ -130,3 +130,49 @@ async def test_invalid_field_rejected():
     with pytest.raises(ValueError):
         await client.search("   ")
     await client.aclose()
+
+
+# --- Egress allow-list (SEC-021) ---
+
+
+def test_assert_host_allowed_accepts_termdat():
+    from termdat_mcp.client import assert_host_allowed
+
+    assert_host_allowed(f"{BASE_URL}/Search")  # no raise
+
+
+@pytest.mark.parametrize(
+    "bad_url",
+    [
+        "http://api.termdat.bk.admin.ch/v2/Search",  # non-https
+        "https://evil.example.com/v2/Search",  # host not allow-listed
+        "https://169.254.169.254/latest/meta-data",  # cloud metadata
+    ],
+)
+def test_assert_host_allowed_rejects(bad_url):
+    from termdat_mcp.client import EgressNotAllowed, assert_host_allowed
+
+    with pytest.raises(EgressNotAllowed):
+        assert_host_allowed(bad_url)
+
+
+async def test_fetch_with_retry_enforces_allow_list():
+    from termdat_mcp.client import EgressNotAllowed, fetch_with_retry
+
+    async with httpx.AsyncClient() as http:
+        with pytest.raises(EgressNotAllowed):
+            await fetch_with_retry(http, "https://evil.example.com/x")
+
+
+# --- Input constraints exposed in the tool schema (SEC-018) ---
+
+
+def test_search_terms_schema_bounds_max_results():
+    from termdat_mcp import server
+
+    tool = server.mcp._tool_manager.get_tool("search_terms")
+    schema = tool.parameters
+    mr = schema["properties"]["max_results"]
+    assert mr.get("maximum") == 100 and mr.get("minimum") == 1
+    st = schema["properties"]["search_term"]
+    assert st.get("maxLength") == 200 and st.get("minLength") == 1

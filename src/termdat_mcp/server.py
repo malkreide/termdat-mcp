@@ -11,7 +11,7 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
-from .client import SEARCH_FIELDS, TermdatClient, UpstreamUnavailable, normalise_language
+from .client import SEARCH_FIELDS, TermdatClient, normalise_language
 from .models import (
     CheckResult,
     SearchResult,
@@ -254,15 +254,14 @@ async def api_status() -> StatusResult:
     try:
         collections, provenance, retrieved_at = await _client.vocabulary("Collection")
         classifications, _, _ = await _client.vocabulary("Classification")
-    except (UpstreamUnavailable, Exception) as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 — status must never raise; report unreachable instead
+        # Deliberately do not forward the raw exception text to the model
+        # (OBS-002: mask upstream/internal error details).
         return StatusResult(
             provenance="cached",
             retrieved_at="unavailable",
             reachable=False,
-            message=(
-                "TERMDAT is currently unreachable. Retry in ~10 minutes. "
-                f"Details: {exc}"
-            ),
+            message="TERMDAT is currently unreachable. Retry in ~10 minutes.",
         )
 
     return StatusResult(

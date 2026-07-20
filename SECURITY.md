@@ -26,7 +26,7 @@ capabilities, and no personal data is processed.
 | Tools | All annotated `readOnlyHint: true`, `destructiveHint: false`; no dynamic or remote tool registration |
 | Errors | Upstream RFC 9110 error bodies are surfaced as structured data, never silently swallowed |
 | Stdout | Reserved for the JSON-RPC stream; the server emits no stray stdout logging |
-| Binding | `stdio` by default (no network surface). SSE binds to `HOST` (default `0.0.0.0` for cloud); set `HOST=127.0.0.1` for local-only use |
+| Binding | `stdio` by default (no network surface). SSE binds to `HOST`, default `127.0.0.1` (loopback); `0.0.0.0` is an explicit opt-in and warns on stderr outside a container (SEC-016) |
 
 ## Accepted risks (portfolio-level controls)
 
@@ -40,8 +40,9 @@ unauthenticated, and reaches only one trusted public-data provider.
   server's tool definitions are version-controlled, authored in-repo, and
   reviewed via PR; there is no dynamic or remote tool registration.
 - **Network binding for hosted deployments** — the SSE transport defaults to
-  `0.0.0.0` for cloud hosting. Front it with a reverse proxy / gateway that
-  enforces TLS and access control, or set `HOST=127.0.0.1` for local use.
+  `127.0.0.1` (loopback). Binding to `0.0.0.0` is an explicit opt-in for
+  container deployments; front it with a reverse proxy / gateway that enforces
+  TLS and access control.
 
 ## Re-evaluation triggers
 

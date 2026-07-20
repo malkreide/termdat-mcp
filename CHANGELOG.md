@@ -6,6 +6,20 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+- **SEC-016 (NeighborJack):** the SSE transport now binds to `127.0.0.1` by
+  default instead of `0.0.0.0`. Binding to `0.0.0.0` is an explicit opt-in that
+  logs a stderr warning when used outside a container. README/SECURITY updated.
+
+### Changed
+- `api_status` no longer forwards the raw upstream exception string to the model
+  (OBS-002 error-detail masking).
+
+### Added
+- MCP best-practice audit against the portfolio catalog (68 checks, 36
+  applicable) under `audits/`: 16 pass, 18 partial, 1 fail (OBS-003), 1 n/a;
+  **production-ready** (no open critical/high failures after the SEC-016 fix).
+
 ## [0.1.0] — 2026-07-20
 
 First public release, published to PyPI.

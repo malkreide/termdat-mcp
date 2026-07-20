@@ -95,7 +95,7 @@ Die gesamte Konfiguration läuft über Umgebungsvariablen. Die Defaults sind fü
 | Variable | Default | Zweck |
 |---|---|---|
 | `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (lokal) oder `sse` / `streamable-http` / `http` (Cloud) |
-| `HOST` | `0.0.0.0` | Bind-Host (nur SSE-Transport) |
+| `HOST` | `127.0.0.1` | Bind-Host (nur SSE-Transport). Standardmässig Loopback; `HOST=0.0.0.0` **nur** im Container setzen |
 | `PORT` | `8000` | Bind-Port (nur SSE-Transport) |
 
 Cloud (Render / Railway):

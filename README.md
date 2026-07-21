@@ -278,3 +278,5 @@ MIT for this server — see [LICENSE](LICENSE). TERMDAT content remains subject 
 - Catalogue entry: [I14Y data service `ff0c37eb…`](https://www.i14y.admin.ch/en/catalog/dataservices/ff0c37eb-2f7c-4ff6-996e-d22b77bf52fc/description)
 - Discovery server: [i14y-mcp](https://github.com/malkreide/i14y-mcp)
 - Portfolio index: [swiss-public-data-mcp](https://github.com/malkreide/swiss-public-data-mcp)
+
+<!-- mcp-name: io.github.malkreide/termdat-mcp -->

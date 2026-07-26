@@ -123,7 +123,7 @@ async def test_api_status_masks_error_when_unreachable(mocked_client):
 async def test_upstream_error_is_masked_for_search(mocked_client):
     with respx.mock:
         respx.get(SEARCH_URL).mock(side_effect=httpx.ConnectError("internal detail"))
-        with pytest.raises(Exception) as exc:  # noqa: PT011
+        with pytest.raises(Exception) as exc:
             await server.search_terms("Bundeskanzlei")
         assert "internal detail" not in str(exc.value)
     await mocked_client.aclose()

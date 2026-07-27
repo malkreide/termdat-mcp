@@ -32,6 +32,40 @@ async def test_out_language_is_additive_not_filtering():
     await client.aclose()
 
 
+async def test_search_is_not_confined_to_varia():
+    """Regression guard for issue #11.
+
+    An ID-less /v2/Search only covers the VARIA classification, which reduced
+    «Pensionskasse» to the single PUBLICA entry and «Quellensteuer» to nothing.
+    """
+    client = TermdatClient()
+    entries, _ = await client.search("Pensionskasse", "DE", detail=True, max_results=100)
+    assert len(entries) > 1, "search must span all classifications, not just VARIA"
+    assert any(e["classification"] != "VARIA" for e in entries)
+
+    hits, _ = await client.search("Quellensteuer", "DE", detail=True, max_results=100)
+    assert hits, "«Quellensteuer» is present in TERMDAT and must be found"
+    await client.aclose()
+
+
+async def test_lucene_wildcard_finds_compounds():
+    """«Quellensteuer» does not match «Quellensteuerverordnung» — «Quellensteuer*» does."""
+    client = TermdatClient()
+    exact, _ = await client.search("Quellensteuer", "DE", max_results=100)
+    prefix, _ = await client.search("Quellensteuer*", "DE", max_results=100)
+    assert len(prefix) > len(exact)
+    await client.aclose()
+
+
+async def test_fields_can_narrow_the_search():
+    """Unsent Field.* flags default to true upstream; narrowing must actually narrow."""
+    client = TermdatClient()
+    broad, _ = await client.search("Steuer", "DE", max_results=1000)
+    narrow, _ = await client.search("Steuer", "DE", fields=("Abbreviation",), max_results=1000)
+    assert len(narrow) < len(broad)
+    await client.aclose()
+
+
 async def test_umlaut_is_encoded_correctly():
     client = TermdatClient()
     entries, _ = await client.search("Sonderpädagogik", "DE", detail=True)

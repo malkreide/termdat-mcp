@@ -14,6 +14,12 @@ from termdat_mcp.client import (
 
 SEARCH_URL = f"{BASE_URL}/Search"
 COLLECTION_URL = f"{BASE_URL}/Collection"
+CLASSIFICATION_URL = f"{BASE_URL}/Classification"
+
+CLASSIFICATIONS = [
+    {"id": 3, "code": "FINA", "text": "FINANZWESEN"},
+    {"id": 16, "code": "VARI", "text": "VARIA"},
+]
 
 RAW_ENTRY = {
     "id": 3053,
@@ -67,6 +73,7 @@ def test_flatten_entry_extracts_nested_text_fields():
 
 @respx.mock
 async def test_search_happy_path_sends_expected_params():
+    respx.get(CLASSIFICATION_URL).mock(return_value=httpx.Response(200, json=CLASSIFICATIONS))
     route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
     client = TermdatClient(http=httpx.AsyncClient())
     entries, _ = await client.search("Bundeskanzlei", "de", out_language="fr", detail=True)
@@ -77,6 +84,75 @@ async def test_search_happy_path_sends_expected_params():
     assert params["OutLanguageCode"] == "FR"
     assert params["ReturnType"] == "Detail"
     assert params["Field.Terminus"] == "true"
+    await client.aclose()
+
+
+# --- Search scope (issue #11) ---
+
+
+@respx.mock
+async def test_search_spans_all_classifications_by_default():
+    """An ID-less /v2/Search is restricted to VARIA upstream — send the full set."""
+    respx.get(CLASSIFICATION_URL).mock(return_value=httpx.Response(200, json=CLASSIFICATIONS))
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
+    client = TermdatClient(http=httpx.AsyncClient())
+    await client.search("Quellensteuer")
+
+    ids = route.calls[0].request.url.params.get_list("ClassificationIds")
+    assert sorted(ids) == ["16", "3"], "every classification must be searched by default"
+    await client.aclose()
+
+
+@respx.mock
+async def test_explicit_classification_ids_are_not_overridden():
+    respx.get(CLASSIFICATION_URL).mock(return_value=httpx.Response(200, json=CLASSIFICATIONS))
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
+    client = TermdatClient(http=httpx.AsyncClient())
+    await client.search("Quellensteuer", classification_ids=[3])
+
+    assert route.calls[0].request.url.params.get_list("ClassificationIds") == ["3"]
+    await client.aclose()
+
+
+@respx.mock
+async def test_search_survives_unreachable_classification_vocabulary():
+    """Widening is best-effort: if the vocabulary fails, the search still runs."""
+    respx.get(CLASSIFICATION_URL).mock(side_effect=httpx.ConnectError("boom"))
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
+    client = TermdatClient(http=httpx.AsyncClient())
+    entries, _ = await client.search("Bundeskanzlei")
+
+    assert len(entries) == 1
+    assert "ClassificationIds" not in route.calls[0].request.url.params
+    await client.aclose()
+
+
+@respx.mock
+async def test_unrequested_fields_are_sent_as_false():
+    """Unsent Field.* flags keep their API-side default, so `fields` could only widen."""
+    respx.get(CLASSIFICATION_URL).mock(return_value=httpx.Response(200, json=CLASSIFICATIONS))
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
+    client = TermdatClient(http=httpx.AsyncClient())
+    await client.search("Bundeskanzlei", fields=("Terminus",))
+
+    params = route.calls[0].request.url.params
+    assert params["Field.Terminus"] == "true"
+    assert params["Field.Name"] == "false", "Name defaults to true upstream — must be disabled"
+    assert params["Field.Definition"] == "false"
+    await client.aclose()
+
+
+@respx.mock
+async def test_default_fields_include_free_text_fields():
+    respx.get(CLASSIFICATION_URL).mock(return_value=httpx.Response(200, json=CLASSIFICATIONS))
+    route = respx.get(SEARCH_URL).mock(return_value=httpx.Response(200, json=[RAW_ENTRY]))
+    client = TermdatClient(http=httpx.AsyncClient())
+    await client.search("Pensionskasse")
+
+    params = route.calls[0].request.url.params
+    for field in ("Terminus", "Name", "Abbreviation", "Phraseology", "Definition", "Note", "Source"):
+        assert params[f"Field.{field}"] == "true"
+    assert params["Field.Country"] == "false"
     await client.aclose()
 
 

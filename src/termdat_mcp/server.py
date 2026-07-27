@@ -20,7 +20,13 @@ from typing import Annotated, Any
 from mcp.server.fastmcp import Context, FastMCP
 from pydantic import Field
 
-from .client import SEARCH_FIELDS, TermdatClient, normalise_language
+from .client import (
+    DEFAULT_SEARCH_FIELDS,
+    DESIGNATION_FIELDS,
+    SEARCH_FIELDS,
+    TermdatClient,
+    normalise_language,
+)
 from .logging_config import configure_logging, log
 from .models import (
     CheckResult,
@@ -68,7 +74,16 @@ _Terms = Annotated[list[str], Field(min_length=1, max_length=25)]
 
 def _fields(fields: str) -> tuple[str, ...]:
     parsed = tuple(f.strip() for f in fields.split(",") if f.strip())
-    return parsed or ("Terminus",)
+    return parsed or DEFAULT_SEARCH_FIELDS
+
+
+_EMPTY_HINT = (
+    "No entry matched. `search_term` is Lucene syntax: try a prefix wildcard "
+    "(e.g. 'Quellensteuer*') to catch compounds, or the fuzzy operator ('~'). "
+    "Widen `fields` to all of: " + ", ".join(SEARCH_FIELDS) + ". "
+    "Only then conclude that the term is absent from TERMDAT — and do not "
+    "substitute a guess for the official designation."
+)
 
 
 @mcp.tool(annotations=_READ_ONLY)
@@ -77,7 +92,7 @@ async def search_terms(
     in_language: str = "DE",
     out_language: str = "",
     detail: bool = True,
-    fields: _Fields = "Terminus",
+    fields: _Fields = "",
     collection_ids: list[int] | None = None,
     classification_ids: list[int] | None = None,
     max_results: _MaxResults = 25,
@@ -88,14 +103,23 @@ async def search_terms(
     of an authority, department or legal act — for example to check how a body is
     named in another national language before citing it.
 
+    `search_term` is **Lucene query syntax**: `*` and `?` wildcards and the `~` fuzzy
+    operator work. Matching is on whole words, so a compound is not found by its
+    parts — «Quellensteuer» does not match «Quellensteuerverordnung», but
+    «Quellensteuer*» does. Reach for a wildcard before concluding a term is absent.
+
     `out_language` adds a target language to every entry's variants — it is purely
     additive and never filters the result set. `fields` is a comma-separated subset
     of: Terminus, Name, Abbreviation, Phraseology, Definition, Note, Context, Source,
-    Metadata, Country, Comment.
+    Metadata, Country, Comment; empty means Terminus, Name, Abbreviation, Phraseology,
+    Definition, Note, Source. By default the search spans all 23 subject
+    classifications; pass `classification_ids` or `collection_ids` to narrow it
+    (see `list_classifications` / `list_collections`).
 
     Scope caveat: TERMDAT holds administrative nomenclature (authority names, titles
-    of legal acts, abbreviations), not domain vocabulary. An empty result usually
-    means the term is out of scope, not that it is wrong.
+    of legal acts, abbreviations), not domain vocabulary — so a term may genuinely be
+    absent. Establish that with a wildcard retry, not from a single empty result, and
+    never fill the gap with a guessed designation.
     """
     entries, retrieved_at = await _client.search(
         search_term,
@@ -115,6 +139,7 @@ async def search_terms(
         out_language=normalise_language(out_language) if out_language else None,
         returned=len(entries),
         truncated=len(entries) >= max_results,
+        hint=_EMPTY_HINT if not entries else None,
         entries=[TermEntry(**e) for e in entries],
     )
 
@@ -151,13 +176,17 @@ async def translate_term(
 
     Returns the preferred designation (sequence 1) plus accepted variants, per matching
     entry. Use this for authority names, department titles and titles of legal acts.
+
+    Matches only against designation fields, so a term merely *mentioned* in a
+    definition is never reported as an equivalent. `term` accepts Lucene wildcards;
+    on an empty result retry with `term*` before concluding there is no equivalent.
     """
     entries, retrieved_at = await _client.search(
         term,
         from_language,
         out_language=to_language,
         detail=True,
-        fields=("Terminus",),
+        fields=DESIGNATION_FIELDS,
         max_results=max_results,
     )
     target = normalise_language(to_language, field="to_language")
@@ -196,7 +225,7 @@ async def translate_term(
 async def _check_one(term: str, lang: str) -> tuple[TermCheck, str]:
     """Check a single term against validated designations. Returns (result, retrieved_at)."""
     entries, retrieved_at = await _client.search(
-        term, lang, detail=True, fields=("Terminus",), max_results=10
+        term, lang, detail=True, fields=DESIGNATION_FIELDS, max_results=10
     )
     exact = None
     for entry in entries:

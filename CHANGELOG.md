@@ -6,6 +6,25 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- **Search was confined to the `VARIA` classification** (#11, reported by
+  @dfch). `/v2/Search` restricts an ID-less query to a "default set (=VARIA)",
+  so every unfiltered search covered 1 of 23 subject areas — and reported the
+  result as a normal empty answer. `search_terms`, `translate_term` and
+  `check_terms` now send the full classification set unless the caller narrows
+  it. «Quellensteuer» 0 → 3 entries, «Pensionskasse» 1 → 21.
+- **`fields` could widen a search but never narrow it.** Unsent `Field.*` flags
+  keep their API-side default (`Terminus`, `Name`, `Abbreviation`,
+  `Phraseology` = true), so `fields="Terminus"` was a no-op. All eleven flags
+  are now sent explicitly.
+- **Default field set widened** to include `Definition`, `Note` and `Source`;
+  `translate_term` and `check_terms` stay on the four designation fields, so a
+  term merely mentioned in a definition is never reported as an equivalent.
+- **Misleading scope caveat.** The `search_terms` docstring presented an empty
+  result as probable out-of-scope, which invited models to invent a designation
+  instead of retrying. It now documents Lucene wildcards and asks for a retry;
+  an empty `SearchResult` carries a `hint` field saying the same.
+
 ### Security
 - **SEC-016 (NeighborJack):** the SSE transport now binds to `127.0.0.1` by
   default instead of `0.0.0.0`. Binding to `0.0.0.0` is an explicit opt-in that

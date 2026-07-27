@@ -40,7 +40,7 @@ def assert_host_allowed(url: str) -> None:
 
 VALID_LANGUAGES = ("DE", "FR", "IT", "EN", "RM", "LA")
 
-# The 12 searchable fields exposed by the API as Field.* boolean flags.
+# The 11 searchable fields exposed by the API as Field.* boolean flags.
 SEARCH_FIELDS = (
     "Terminus",
     "Name",
@@ -54,6 +54,15 @@ SEARCH_FIELDS = (
     "Country",
     "Comment",
 )
+
+# Fields that carry a *designation* rather than free text. Translation and QA
+# lookups stay inside these: a term mentioned in a definition is not a synonym.
+DESIGNATION_FIELDS = ("Terminus", "Name", "Abbreviation", "Phraseology")
+
+# Default for open-ended search. The API's own defaults are the four designation
+# fields only, which misses entries that name the term in their definition, note
+# or source — see the "Quellensteuer" case in issue #11.
+DEFAULT_SEARCH_FIELDS = (*DESIGNATION_FIELDS, "Definition", "Note", "Source")
 
 
 class UpstreamUnavailable(RuntimeError):
@@ -156,6 +165,21 @@ class TermdatClient:
             await self._http.aclose()
             self._http = None
 
+    async def _all_classification_ids(self) -> list[int] | None:
+        """Every classification ID, so that an unfiltered search really is unfiltered.
+
+        /v2/Search restricts an ID-less query to a "default set (=VARIA)" — one of
+        23 subject areas, and the residual one at that. Sending the full set is the
+        only way to search the whole database. Returns None if the vocabulary is
+        unavailable: widening the search must never be able to break it.
+        """
+        try:
+            values, _, _ = await self.vocabulary("Classification", "DE")
+        except Exception:  # noqa: BLE001 — best-effort widening, never fatal
+            log.warning("termdat.classification_widening_unavailable")
+            return None
+        return [v["id"] for v in values if isinstance(v.get("id"), int)] or None
+
     async def search(
         self,
         search_term: str,
@@ -163,14 +187,25 @@ class TermdatClient:
         *,
         out_language: str | None = None,
         detail: bool = False,
-        fields: tuple[str, ...] = ("Terminus",),
+        fields: tuple[str, ...] = DEFAULT_SEARCH_FIELDS,
         collection_ids: list[int] | None = None,
         classification_ids: list[int] | None = None,
         max_results: int = 25,
     ) -> tuple[list[dict], str]:
-        """Call /v2/Search. Returns (flattened entries, retrieved_at)."""
+        """Call /v2/Search. Returns (flattened entries, retrieved_at).
+
+        `classification_ids=None` means "search everything", which costs an extra
+        (cached) vocabulary call — see `_all_classification_ids`. Pass an explicit
+        list to narrow.
+        """
         if not search_term.strip():
             raise ValueError("search_term must not be empty")
+        for field in fields:
+            if field not in SEARCH_FIELDS:
+                raise ValueError(f"Unknown search field {field!r}; expected one of {SEARCH_FIELDS}")
+
+        if classification_ids is None and not collection_ids:
+            classification_ids = await self._all_classification_ids()
 
         params: dict[str, Any] = {
             "SearchTerm": search_term,
@@ -180,10 +215,12 @@ class TermdatClient:
         }
         if out_language:
             params["OutLanguageCode"] = normalise_language(out_language, field="out_language")
-        for field in fields:
-            if field not in SEARCH_FIELDS:
-                raise ValueError(f"Unknown search field {field!r}; expected one of {SEARCH_FIELDS}")
-            params[f"Field.{field}"] = "true"
+        # Every flag is sent explicitly. Unsent flags keep their API-side default
+        # (Terminus/Name/Abbreviation/Phraseology = true), so omitting them would
+        # make `fields` able to widen the search but never to narrow it.
+        requested = set(fields)
+        for field in SEARCH_FIELDS:
+            params[f"Field.{field}"] = "true" if field in requested else "false"
         if collection_ids:
             params["CollectionIds"] = collection_ids
         if classification_ids:

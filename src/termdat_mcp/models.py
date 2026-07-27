@@ -63,6 +63,10 @@ class SearchResult(Envelope):
     truncated: bool = Field(
         description="True if the result hit max_results — narrow the query or raise the limit"
     )
+    hint: str | None = Field(
+        default=None,
+        description="Set when the search returned nothing; suggests how to widen it",
+    )
     entries: list[TermEntry]
 
 

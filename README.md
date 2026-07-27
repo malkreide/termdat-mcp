@@ -199,6 +199,9 @@ termdat-mcp/
 
 - **Administrative scope only.** See the coverage table above. `check_terms` returns `not_found`, never «incorrect», precisely because absence from TERMDAT is not evidence of error.
 - **`MaxEntryCount` has a silent default of ~25.** Omitting it looks like a complete result set. This server always sends the parameter explicitly and reports `truncated`.
+- **`CollectionIds` / `ClassificationIds` have a silent default of `VARIA`.** An ID-less `/v2/Search` covers **one of 23** subject areas — the residual one — and reports the truncated result as a normal empty answer. This server sends the full classification set unless you narrow it explicitly. See [issue #11](https://github.com/malkreide/termdat-mcp/issues/11).
+- **`SearchTerm` is Lucene, and matching is on whole words.** «Quellensteuer» does not match «Quellensteuerverordnung»; «Quellensteuer*» does. `*`, `?` and `~` are available — on an empty result, retry with a wildcard before concluding the term is absent.
+- **`Field.*` flags default to true where unsent.** `Terminus`, `Name`, `Abbreviation` and `Phraseology` are on unless explicitly disabled, so a partial flag set can only widen a search. This server sends all eleven flags explicitly, which is what makes `fields` able to narrow.
 - **Multilingual variants are opt-in.** Without `OutLanguageCode`, entries return German designations only. `translate_term` sets it for you.
 - **No licence statement.** The I14Y catalogue record carries `license: null`. Clarify terms with the Federal Chancellery before republishing TERMDAT content downstream. Every response repeats this in `source`.
 - **Entry-level language coverage varies.** Not every entry exists in all four languages; `translate_term` omits entries without a target-language variant rather than inventing one.
@@ -218,6 +221,28 @@ termdat-mcp/
 **Probe note: a correction worth recording.** An earlier probe concluded that `OutLanguageCode` *filters* the result set, because adding it appeared to drop all hits. It does not. Two variables had been changed at once — the parameter and the search term — and the term itself («Volksschule») genuinely has zero hits. Verified afterwards across four broad terms: result counts are identical with and without `OutLanguageCode`; the parameter is purely additive. A regression test (`test_out_language_is_additive_not_filtering`) now guards this.
 
 **Rule of thumb:** *change one variable per probe call, or the API will confess to a crime it did not commit.*
+
+### Live probe findings (2026-07-27) — search scope
+
+Reported in [issue #11](https://github.com/malkreide/termdat-mcp/issues/11): «Quellensteuer»
+returned nothing while the TERMDAT website returned twelve hits. Three independent causes,
+in descending order of effect. Entry counts, `InLanguageCode=DE`:
+
+| Query | ID-less (`=VARIA`) | all 23 classifications | + free-text fields | + `*` wildcard |
+|---|---|---|---|---|
+| `Quellensteuer` | 0 | 1 | 3 | 6 |
+| `Pensionskasse` | 1 | 4 | 22 | 27 |
+
+The first column is what this server sent before the fix. The `VARIA` default is the
+dominant term: it hid `FINANZWESEN`, `RECHT` and twenty other subject areas behind an
+answer that looked like a confident zero.
+
+**Probe note.** The failure mode worth recording is not the count — it is that an
+under-scoped search is indistinguishable from a genuine absence. In the reported session
+the model read the empty result together with this server's own «absence usually means out
+of scope» caveat and invented a plausible explanation for a term that was in the database
+all along. A tool that narrows silently will be believed silently. Hence `hint` on empty
+results, and a caveat that now tells the model to retry rather than to conclude.
 
 ## Project Phase
 

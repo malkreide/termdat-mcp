@@ -200,6 +200,9 @@ termdat-mcp/
 
 - **Nur Verwaltungsterminologie.** Siehe Abdeckungstabelle oben. `check_terms` liefert `not_found`, nie «falsch» — genau weil Fehlen in TERMDAT kein Fehlerbeleg ist.
 - **`MaxEntryCount` hat einen stillen Default von rund 25.** Ohne den Parameter sieht das Resultat vollständig aus. Dieser Server sendet ihn immer explizit und meldet `truncated`.
+- **`CollectionIds` / `ClassificationIds` haben einen stillen Default auf `VARIA`.** Eine Suche ohne IDs deckt **1 von 23** Sachgebieten ab — ausgerechnet die Restkategorie — und meldet das verkürzte Ergebnis als ganz normale Leermenge. Dieser Server sendet alle Klassifikationen, sofern du nicht explizit einschränkst. Siehe [Issue #11](https://github.com/malkreide/termdat-mcp/issues/11).
+- **`SearchTerm` ist Lucene, und gematcht wird auf ganzen Wörtern.** «Quellensteuer» findet «Quellensteuerverordnung» nicht, «Quellensteuer*» schon. `*`, `?` und `~` stehen zur Verfügung — bei einem leeren Resultat zuerst mit Wildcard nachfassen, bevor man auf Abwesenheit schliesst.
+- **Nicht gesendete `Field.*`-Flags stehen serverseitig auf true.** `Terminus`, `Name`, `Abbreviation` und `Phraseology` sind aktiv, solange sie nicht explizit deaktiviert werden — ein unvollständiges Flag-Set kann eine Suche also nur erweitern, nie verengen. Dieser Server sendet alle elf Flags explizit; erst dadurch wirkt `fields` einschränkend.
 - **Mehrsprachige Varianten sind Opt-in.** Ohne `OutLanguageCode` kommen nur die deutschen Benennungen; und sie erscheinen nur bei `ReturnType=Detail`. `translate_term` setzt beides für dich.
 - **Keine Lizenzangabe.** Der I14Y-Katalogeintrag führt `license: null`. Vor jeder Weiterveröffentlichung von TERMDAT-Inhalten die Bedingungen mit der Bundeskanzlei klären. Jede Antwort wiederholt das im Feld `source`.
 - **Sprachabdeckung variiert pro Eintrag.** Nicht jeder Eintrag existiert in allen vier Sprachen; `translate_term` lässt Einträge ohne Zielsprache weg, statt etwas zu erfinden.
@@ -219,6 +222,29 @@ termdat-mcp/
 **Probe-Notiz: eine Korrektur, die festgehalten gehört.** Eine frühere Probe schloss, `OutLanguageCode` **filtere** die Treffermenge, weil mit dem Parameter alle Treffer verschwanden. Das stimmt nicht. Es wurden zwei Variablen gleichzeitig geändert — der Parameter und der Suchbegriff —, und der Begriff selbst («Volksschule») hat schlicht null Treffer. Danach über vier breite Begriffe verifiziert: Die Trefferzahl ist mit und ohne `OutLanguageCode` identisch, der Parameter ist rein additiv. Ein Regressionstest (`test_out_language_is_additive_not_filtering`) sichert das jetzt ab.
 
 **Faustregel:** *Pro Probe-Call nur eine Variable ändern — sonst gesteht die API eine Tat, die sie nicht begangen hat.*
+
+### Befunde der Live-Probe (27.07.2026) — Suchraum
+
+Gemeldet in [Issue #11](https://github.com/malkreide/termdat-mcp/issues/11): «Quellensteuer»
+lieferte null Treffer, während die TERMDAT-Website zwölf zeigte. Drei unabhängige Ursachen,
+absteigend nach Wirkung. Trefferzahlen mit `InLanguageCode=DE`:
+
+| Query | ohne IDs (`=VARIA`) | alle 23 Klassifikationen | + Freitextfelder | + `*`-Wildcard |
+|---|---|---|---|---|
+| `Quellensteuer` | 0 | 1 | 3 | 6 |
+| `Pensionskasse` | 1 | 4 | 22 | 27 |
+
+Die erste Spalte ist das, was dieser Server vor dem Fix gesendet hat. Der `VARIA`-Default
+dominiert: Er hat `FINANZWESEN`, `RECHT` und zwanzig weitere Sachgebiete hinter einer
+Antwort versteckt, die wie eine belastbare Null aussah.
+
+**Probe-Notiz.** Festhaltenswert ist nicht die Trefferzahl, sondern dass eine zu eng
+gefasste Suche von echter Abwesenheit nicht unterscheidbar ist. In der gemeldeten Session
+las das Modell das leere Resultat zusammen mit dem hauseigenen Hinweis «Fehlen heisst meist
+ausserhalb des Scopes» — und erfand eine plausible Erklärung für einen Begriff, der die
+ganze Zeit in der Datenbank stand. Einem Werkzeug, das stillschweigend einschränkt, wird
+stillschweigend geglaubt. Daher `hint` bei Leermengen und ein Caveat, das dem Modell jetzt
+sagt, es solle nachfassen statt schliessen.
 
 ## Projektphase
 

@@ -6,7 +6,15 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-07-27
+
 ### Fixed
+- **MCP Registry publish was blocked by a missing ownership marker.** The
+  registry verifies ownership of a PyPI package by looking for an
+  `mcp-name: <server-name>` marker in the *published* package README. The marker
+  was added to `README.md` after 0.1.0 shipped, so it never reached PyPI — and
+  PyPI releases are immutable, so it cannot be added to the 0.1.0 artifact
+  retroactively. This release carries it into the package metadata.
 - **Search was confined to the `VARIA` classification** (#11, reported by
   @dfch). `/v2/Search` restricts an ID-less query to a "default set (=VARIA)",
   so every unfiltered search covered 1 of 23 subject areas — and reported the

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "termdat-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "MCP server for TERMDAT — the terminology database of the Swiss Federal Administration"
 readme = "README.md"
 requires-python = ">=3.10"

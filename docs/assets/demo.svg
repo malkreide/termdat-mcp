@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="310" viewBox="0 0 640 310">
+  <rect width="640" height="310" fill="#0d1117"/>
+
+  <!-- Gap lines -->
+  <rect x="0" y="100" width="640" height="1" fill="#30363d"/>
+  <rect x="0" y="205" width="640" height="1" fill="#30363d"/>
+
+  <!-- Panel 1: User (y=0, h=100) -->
+  <rect x="0" y="0" width="3" height="100" fill="#58a6ff"/>
+  <rect x="3" y="0" width="637" height="100" fill="#161b22"/>
+  <text x="16" y="20" font-family="monospace" font-size="13" fill="#58a6ff" font-weight="bold">&#x1F4AC; You</text>
+  <text x="16" y="44" font-family="monospace" font-size="13" fill="#c9d1d9">What is the official French name of the Bildungsdirektion,</text>
+  <text x="16" y="62" font-family="monospace" font-size="13" fill="#c9d1d9">and is that designation validated?</text>
+
+  <!-- Panel 2: Tool Call (y=101, h=104) -->
+  <rect x="0" y="101" width="3" height="104" fill="#e3b341"/>
+  <rect x="3" y="101" width="637" height="104" fill="#161b22"/>
+  <text x="16" y="121" font-family="monospace" font-size="13" fill="#e3b341" font-weight="bold">&#x1F527; Tool Calls</text>
+  <text x="16" y="145" font-family="monospace" font-size="13" fill="#e3b341">search_terms(search_term=&quot;Bildungsdirektion&quot;, in_language=&quot;DE&quot;)</text>
+  <text x="16" y="163" font-family="monospace" font-size="13" fill="#e3b341">translate_term(term=&quot;Bildungsdirektion&quot;, to_language=&quot;FR&quot;)</text>
+
+  <!-- Panel 3: Claude response (y=206, h=104) -->
+  <rect x="0" y="206" width="3" height="104" fill="#3fb950"/>
+  <rect x="3" y="206" width="637" height="104" fill="#161b22"/>
+  <text x="16" y="226" font-family="monospace" font-size="13" fill="#3fb950" font-weight="bold">&#x1F916; Claude</text>
+  <text x="16" y="250" font-family="monospace" font-size="13" fill="#c9d1d9">&#xAB;direction de l&#x2019;instruction publique&#xBB; &#x2014; validated entry,</text>
+  <text x="16" y="268" font-family="monospace" font-size="13" fill="#c9d1d9">with source reference. 13 hits for &#x201C;Bildung&#x201D; in TERMDAT.</text>
+</svg>

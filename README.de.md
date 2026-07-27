@@ -53,6 +53,10 @@ Die dreizehn «Bildung»-Treffer sind Organisationsbezeichnungen — Bildungsdir
 
 Aufgelöst über `list_classifications` → `search_terms` → `translate_term`.
 
+### Demo
+
+![Demo: Claude nutzt search_terms und translate_term](docs/assets/demo.svg)
+
 ## Voraussetzungen
 
 - Python 3.10+
@@ -282,15 +286,15 @@ PYTHONPATH=src ruff check src tests
 
 Siehe [CHANGELOG.md](CHANGELOG.md).
 
-## Sicherheit
-
-Siehe [SECURITY.md](SECURITY.md) für Sicherheits-Posture, Härtungskontrollen und wie Schwachstellen gemeldet werden.
-
 ## Mitwirken
 
 Issues und Pull Requests sind willkommen. Bitte Tools read-only halten, vor dem Einreichen `ruff check` und die Offline-Testsuite laufen lassen und für nutzersichtbare Änderungen einen Eintrag unter `[Unreleased]` in der `CHANGELOG.md` ergänzen.
 
 Maintainer: siehe [PUBLISHING.md](PUBLISHING.md) für den Schritt-für-Schritt-PyPI-Release-Prozess (Trusted Publishing via GitHub Release).
+
+## Sicherheit
+
+Siehe [SECURITY.md](SECURITY.md) für Sicherheits-Posture, Härtungskontrollen und wie Schwachstellen gemeldet werden.
 
 ## Lizenz
 

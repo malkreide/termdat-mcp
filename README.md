@@ -53,6 +53,10 @@ The thirteen «Bildung» hits are organisational names — Bildungsdirektion, Er
 
 Resolved with `list_classifications` → `search_terms` → `translate_term`.
 
+### Demo
+
+![Demo: Claude using search_terms and translate_term](docs/assets/demo.svg)
+
 ## Prerequisites
 
 - Python 3.10+
@@ -279,15 +283,15 @@ PYTHONPATH=src ruff check src tests
 
 See [CHANGELOG.md](CHANGELOG.md).
 
-## Security
-
-See [SECURITY.md](SECURITY.md) for the security posture, hardening controls, and how to report a vulnerability.
-
 ## Contributing
 
 Issues and pull requests are welcome. Please keep tools read-only, run `ruff check` and the offline test suite before submitting, and add a `CHANGELOG.md` entry under `[Unreleased]` for user-facing changes.
 
 Maintainers: see [PUBLISHING.md](PUBLISHING.md) for the step-by-step PyPI release process (Trusted Publishing via GitHub Release).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the security posture, hardening controls, and how to report a vulnerability.
 
 ## License
 

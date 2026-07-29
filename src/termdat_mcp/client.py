@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from . import __version__
 from .logging_config import log
 
 BASE_URL = "https://api.termdat.bk.admin.ch/v2"
@@ -156,7 +157,7 @@ class TermdatClient:
     async def _client(self) -> httpx.AsyncClient:
         if self._http is None:
             self._http = httpx.AsyncClient(
-                timeout=httpx.Timeout(60.0), headers={"User-Agent": "termdat-mcp/0.1.0"}
+                timeout=httpx.Timeout(60.0), headers={"User-Agent": f"termdat-mcp/{__version__}"}
             )
         return self._http
 

@@ -17,7 +17,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 from pydantic import Field
 
 from .client import (
@@ -49,7 +49,7 @@ _client = TermdatClient(vocab_ttl=settings.vocab_ttl_seconds)
 
 
 @asynccontextmanager
-async def _lifespan(_server: FastMCP) -> AsyncIterator[dict[str, Any]]:
+async def _lifespan(_server: MCPServer) -> AsyncIterator[dict[str, Any]]:
     """Own the shared client's lifecycle: log startup, close the client on shutdown."""
     configure_logging(settings.log_level)
     log.info("termdat_mcp.startup", transport=settings.transport)
@@ -60,7 +60,7 @@ async def _lifespan(_server: FastMCP) -> AsyncIterator[dict[str, Any]]:
         log.info("termdat_mcp.shutdown")
 
 
-mcp = FastMCP("termdat-mcp", lifespan=_lifespan)
+mcp = MCPServer("termdat-mcp", lifespan=_lifespan)
 
 _READ_ONLY: dict[str, Any] = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
 

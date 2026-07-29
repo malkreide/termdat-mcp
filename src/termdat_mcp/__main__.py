@@ -86,8 +86,8 @@ def _run_sse() -> None:
             hint="Set TERMDAT_MCP_ALLOWED_HOSTS to the hostnames this server is "
             "reachable under; without it the Host header is not checked at all.",
         )
-    mcp.settings.transport_security = security
-    app = mcp.sse_app()
+    # mcp 2.x: transport_security is a per-app kwarg, not a mutable setting.
+    app = mcp.sse_app(transport_security=security, host=settings.host)
     # Default-deny CORS: no browser origin is allowed unless TERMDAT_MCP_CORS_ORIGINS
     # lists it explicitly (never a wildcard in production). The MCP session header is
     # exposed and accepted so browser clients can round-trip it.

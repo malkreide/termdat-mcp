@@ -26,6 +26,14 @@ class Settings(BaseSettings):
         default_factory=list, validation_alias="TERMDAT_MCP_CORS_ORIGINS"
     )
 
+    # Inbound Host allow-list for the SSE transport (SEC-005, inbound half).
+    # e.g. TERMDAT_MCP_ALLOWED_HOSTS="mcp.example.ch,mcp.example.ch:443".
+    # Only needed for a non-loopback bind: the reachable name is then a service
+    # or public DNS name this process cannot derive from the bind address.
+    allowed_hosts: list[str] = Field(
+        default_factory=list, validation_alias="TERMDAT_MCP_ALLOWED_HOSTS"
+    )
+
     @property
     def is_network_transport(self) -> bool:
         return self.transport.lower() in ("sse", "streamable-http", "http")

@@ -32,12 +32,61 @@ def _warn_on_public_binding(host: str) -> None:
         )
 
 
+def build_transport_security(cfg=None):
+    """Host/Origin allow-list for the SSE transport (SEC-005, inbound half).
+
+    The SDK leaves DNS-rebinding protection OFF while ``transport_security`` is
+    unset — its own source says "If not specified, disable DNS rebinding
+    protection by default for backwards compatibility". Unset therefore means
+    no Host and no Origin validation at all.
+
+    Returns ``None`` when no allow-list can be derived: a non-loopback bind with
+    no ``TERMDAT_MCP_ALLOWED_HOSTS``. The server is then reached under a service
+    or public DNS name this process does not know, and a guessed list would
+    reject every real request with HTTP 421. The caller warns instead.
+    """
+    from mcp.server.transport_security import TransportSecuritySettings
+
+    cfg = cfg if cfg is not None else settings
+    port = cfg.port
+    loopback = {f"127.0.0.1:{port}", f"localhost:{port}", f"[::1]:{port}"}
+    if cfg.allowed_hosts:
+        # Loopback stays reachable for container health checks and debugging.
+        hosts = set(cfg.allowed_hosts) | loopback
+    elif cfg.host in ("127.0.0.1", "localhost", "::1"):
+        hosts = loopback | {f"{cfg.host}:{port}"}
+    else:
+        return None
+
+    # CORS here is default-deny, so allowed_origins would normally be just the
+    # derived loopback set. Any origin the operator did allow must also pass the
+    # transport check, otherwise the server rejects exactly the browser clients
+    # CORS permits. "*" is matched literally by the SDK (only a trailing ":*"
+    # port wildcard exists), so it is not copied across.
+    origins = {o for o in cfg.cors_allow_origins if o != "*"}
+    origins |= {f"http://{h}" for h in hosts}
+    return TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=sorted(hosts),
+        allowed_origins=sorted(origins),
+    )
+
+
 def _run_sse() -> None:
     """Run the SSE transport with explicit CORS for the MCP session header (SDK-004)."""
     import uvicorn
     from starlette.middleware.cors import CORSMiddleware
 
     _warn_on_public_binding(settings.host)
+    security = build_transport_security()
+    if security is None:
+        log.warning(
+            "termdat_mcp.dns_rebinding_protection_off",
+            host=settings.host,
+            hint="Set TERMDAT_MCP_ALLOWED_HOSTS to the hostnames this server is "
+            "reachable under; without it the Host header is not checked at all.",
+        )
+    mcp.settings.transport_security = security
     app = mcp.sse_app()
     # Default-deny CORS: no browser origin is allowed unless TERMDAT_MCP_CORS_ORIGINS
     # lists it explicitly (never a wildcard in production). The MCP session header is

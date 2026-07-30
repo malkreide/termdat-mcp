@@ -6,6 +6,15 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-07-30
+
+### Fixed
+
+- **The User-Agent reports the actual package version again.** The published
+  `0.1.1` sent `termdat-mcp/0.1.0` to every upstream — the version string was
+  hardcoded and had been left behind by earlier bumps. The version now comes
+  from the package metadata, so it can no longer drift from the package.
+
 ### Documented
 
 - **The public API exposes less than the website** — a coverage limit of the

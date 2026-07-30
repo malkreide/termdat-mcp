@@ -6,6 +6,30 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Documented
+
+- **The public API exposes less than the website** — a coverage limit of the
+  source, not a scope setting on our side. Follow-up to #11: @dfch supplied the
+  12 entry IDs the website lists for «Quellensteuer»; the API returns 7 at
+  maximum recall (every language, all 11 fields, infix wildcard, all
+  classifications and collections), and the two sets overlap in exactly **one**
+  entry, 447912. Fetching the missing IDs directly via `/v2/Entry` returns
+  HTTP 200 with an empty body — they are not served at all, so no query can
+  reach them. The one exception, 1557, is served but carries status
+  `In Bearbeitung` in a collection marked «(aufgehoben)», which suggests the
+  search index covers validated entries while the website also shows drafts and
+  repealed material.
+
+  This corrects an earlier guess. The residual was described in #11 as probably
+  a counting difference — the website listing designations where the API counts
+  entries. The IDs disprove that: they are twelve distinct entries. Recorded
+  here so the wrong explanation does not outlive the measurement.
+
+  Documented in both READMEs, and in the `search_terms` docstring, where it
+  matters most: a model told only that «a term may genuinely be absent» will
+  conclude «absent from TERMDAT», which is false for entries the website shows.
+  The docstring now distinguishes the two.
+
 ### Fixed
 
 - **Capped `mcp` at `<2`.** `mcp` 2.0.0, published 2026-07-28, removed

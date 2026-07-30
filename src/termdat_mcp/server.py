@@ -120,6 +120,11 @@ async def search_terms(
     of legal acts, abbreviations), not domain vocabulary — so a term may genuinely be
     absent. Establish that with a wildcard retry, not from a single empty result, and
     never fill the gap with a guessed designation.
+
+    Coverage caveat: the public API serves a subset of what termdat.bk.admin.ch shows.
+    Entries the website lists can be missing from the API entirely — not hidden by a
+    filter, simply not served. So «not found here» means «not in the API», never «not
+    in TERMDAT»: say which one you mean, and point at the website for the difference.
     """
     entries, retrieved_at = await _client.search(
         search_term,

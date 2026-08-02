@@ -8,8 +8,10 @@ and are needed to make filter arguments legible to an agent.
 from __future__ import annotations
 
 import asyncio
+import random
 import time
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -25,6 +27,68 @@ VOCAB_TTL_SECONDS = 24 * 60 * 60
 # Code-layer egress allow-list (SEC-021): the only host this server may reach.
 # Enforced before every outbound request; not mutable at runtime.
 ALLOWED_HOSTS = frozenset({"api.termdat.bk.admin.ch"})
+
+# --- Retry policy (ARCH-014) ------------------------------------------------
+# *What* is retried is settled in `fetch_with_retry` (4xx except 429 fails
+# fast). These settle *how fast*.
+
+# Ceiling on a single wait. Guards the exponential ladder, which would otherwise
+# grow without bound, and a `Retry-After` TERMDAT is entitled to send but that
+# we are not obliged to sit through.
+MAX_DELAY_S = 20.0
+
+# Jitter spread. Without it every client that hit the same outage retries in
+# lockstep, and the load returns as a wave exactly when the API recovers — the
+# retry storm extends the outage it was meant to bridge.
+JITTER_SPREAD = 0.5  # exponential delays land in [0.5x, 1.5x]
+
+# On a `Retry-After` the spread is one-sided: the API said when to come back,
+# so later is polite and earlier would ignore the very value we just read.
+RETRY_AFTER_JITTER = 0.25  # lands in [1.0x, 1.25x]
+
+# Statuses that carry a meaningful `Retry-After` (RFC 9110 §10.2.3).
+RETRY_AFTER_STATUSES = frozenset({429, 503})
+
+
+def parse_retry_after(resp: httpx.Response | None) -> float | None:
+    """Seconds to wait per the response's ``Retry-After``, or None.
+
+    RFC 9110 §10.2.3 allows two forms: delta-seconds (``120``) and an HTTP-date
+    (``Wed, 21 Oct 2026 07:28:00 GMT``). Both occur, so both are read. Anything
+    unparseable yields None and the caller falls back to its own curve — a
+    malformed header must not become a crash on the error path.
+    """
+    if resp is None or resp.status_code not in RETRY_AFTER_STATUSES:
+        return None
+    raw = (resp.headers.get("Retry-After") or "").strip()
+    if not raw:
+        return None
+    if raw.isdigit():
+        return float(raw)
+    try:
+        when = parsedate_to_datetime(raw)
+    except (TypeError, ValueError):
+        return None
+    if when is None:
+        return None
+    if when.tzinfo is None:  # RFC 9110 dates are GMT; a naive one means UTC
+        when = when.replace(tzinfo=timezone.utc)
+    # Past date means "now".
+    return max(0.0, (when - datetime.now(timezone.utc)).total_seconds())
+
+
+def retry_delay(attempt: int, last_error: Exception | None) -> float:
+    """Seconds to wait before ``attempt``.
+
+    The API's own answer beats our guess: a ``Retry-After`` on a 429 or 503 wins
+    over the exponential curve, which is guessing at the same question.
+    """
+    hinted = parse_retry_after(getattr(last_error, "response", None))
+    if hinted is not None:
+        capped = min(hinted, MAX_DELAY_S)
+        return capped * (1.0 + random.random() * RETRY_AFTER_JITTER)
+    capped = min(float(2**attempt), MAX_DELAY_S)
+    return capped * (1.0 - JITTER_SPREAD + random.random() * 2 * JITTER_SPREAD)
 
 
 class EgressNotAllowed(RuntimeError):
@@ -89,12 +153,16 @@ def normalise_language(code: str, *, field: str = "language") -> str:
 async def fetch_with_retry(
     http: httpx.AsyncClient, url: str, params: dict[str, Any] | None = None, *, max_attempts: int = 4
 ) -> httpx.Response:
-    """GET with exponential backoff: 2s, 4s, 8s. 4xx except 429 fails fast."""
+    """GET with jittered exponential backoff (2s/4s/8s, capped at MAX_DELAY_S).
+
+    A ``Retry-After`` sent by TERMDAT on a 429 or 503 overrides that curve; see
+    :func:`retry_delay`. 4xx except 429 fails fast.
+    """
     assert_host_allowed(url)  # SEC-021: enforce the egress allow-list per request
     last_error: Exception | None = None
     for attempt in range(max_attempts):
         if attempt > 0:
-            await asyncio.sleep(2**attempt)
+            await asyncio.sleep(retry_delay(attempt, last_error))
         try:
             resp = await http.get(url, params=params)
             resp.raise_for_status()

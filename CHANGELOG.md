@@ -28,8 +28,32 @@ versioning follows [SemVer](https://semver.org/).
   wachsende Leiter und gegen ein `Retry-After`, das die API senden darf, das man
   aber nicht absitzen muss.
 
-  Offen aus ARCH-014 bleibt ein **Gesamtbudget** ueber den ganzen Aufruf, das
-  unter dem Timeout des aufrufenden MCP-Clients liegt.
+- **Gesamtbudget von 25 s ueber den ganzen Aufruf** (ARCH-014). Eine Anzahl
+  Versuche ist keine Grenze: Vier Versuche a 60 s Timeout plus Backoff sind
+  ueber vier Minuten, und die Zahl `4` sagt das nirgends. Entscheidender ist,
+  dass die massgebliche Grenze gar nicht uns gehoert — der Aufrufer hat sein
+  eigenes Timeout, und jenseits davon hoert niemand mehr zu: Die Arbeit laeuft
+  weiter, die Last landet bei TERMDAT, das Ergebnis geht ins Leere.
+
+  Der Anker ist gemessen, nicht geschaetzt: Das Python-MCP-SDK setzt
+  `MCP_DEFAULT_TIMEOUT = 30.0` fuer allgemeine Operationen
+  (`mcp/shared/_httpx_utils.py`). 25 s lassen Luft fuer MCP-Framing,
+  Antwort-Parsing und die Tool-Schicht. Ein Test haelt die Beziehung fest und
+  schlaegt an, wenn das SDK seinen Default senkt.
+
+  Geprueft wird vor jedem Versuch: Eine Wartezeit, die das Budget ueberdauern
+  wuerde, wird nicht mehr angetreten, und das Timeout eines einzelnen Versuchs
+  ist auf die verbleibende Zeit geklemmt. Log-Event und Meldung nennen neu,
+  **welche** Grenze gegriffen hat — «all 4 attempts used» und «25s budget
+  spent» verlangen verschiedene Antworten.
+
+  Das Client-Timeout faellt von 60 s auf 25 s: Ein Wert oberhalb des Budgets
+  haette nur noch behauptet, was er nicht mehr gewaehrt.
+
+  Die Abwaegung ist bewusst: Ein langsamer erster Versuch kann jetzt das Budget
+  aufbrauchen und laesst dann keinen Retry mehr zu. Genau das ist die
+  beabsichtigte Antwort — ein Retry, der nach dem Aufgeben des Aufrufers fertig
+  wird, bringt niemandem etwas und kostet TERMDAT eine Anfrage.
 
 ## [0.1.3] - 2026-08-02
 

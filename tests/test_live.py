@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
+from termdat_mcp import client as client_module
 from termdat_mcp.client import TermdatClient
+
+# Beim Import festgehalten — hier hat noch keine Fixture gepatcht.
+_UNPATCHED_SLEEP = asyncio.sleep
 
 pytestmark = pytest.mark.live
 
@@ -71,3 +77,14 @@ async def test_umlaut_is_encoded_correctly():
     entries, _ = await client.search("Sonderpädagogik", "DE", detail=True)
     assert entries, "expected hits for Sonderpädagogik"
     await client.aclose()
+
+
+def test_backoff_is_not_patched_out_here():
+    """Die ``_no_sleep``-Fixture darf Live-Tests nicht anfassen (conftest.py).
+
+    Sie überspringt in gemockten Tests den 2s/4s/8s-Backoff — hier wäre das
+    Unhöflichkeit: Ein Retry gegen die echte TERMDAT-API würde zu vier
+    Requests ohne Pause. Der Test braucht kein Netz und läuft genau dann,
+    wenn die Ausnahme zählt: im Live-Lauf.
+    """
+    assert client_module.asyncio.sleep is _UNPATCHED_SLEEP

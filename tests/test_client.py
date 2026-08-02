@@ -4,6 +4,7 @@ import httpx
 import pytest
 import respx
 
+from termdat_mcp import client as client_module
 from termdat_mcp.client import (
     BASE_URL,
     TermdatClient,
@@ -183,6 +184,35 @@ async def test_network_error_raises_clean_exception():
     client = TermdatClient(http=httpx.AsyncClient())
     with pytest.raises(UpstreamUnavailable):
         await client.search("Bundeskanzlei")
+    await client.aclose()
+
+
+@respx.mock
+async def test_unreachable_message_survives_an_empty_exception_string(monkeypatch):
+    """OBS-007: the message must still say something when ``str(exc)`` is empty.
+
+    ``httpx.ConnectTimeout``, ``ReadTimeout`` and ``ConnectError`` all carry an
+    empty ``str()`` — and those are the errors an outage actually produces. The
+    exception type and the host have to survive that, and the cause has to stay
+    chained so the original traceback is not lost.
+
+    The backoff is patched out: this test exhausts all four attempts, and the
+    real ladder would add 14 seconds to the suite for nothing.
+    """
+
+    async def _instant(_seconds):
+        return None
+
+    monkeypatch.setattr(client_module.asyncio, "sleep", _instant)
+    respx.get(SEARCH_URL).mock(side_effect=httpx.ConnectTimeout(""))
+    client = TermdatClient(http=httpx.AsyncClient())
+    with pytest.raises(UpstreamUnavailable) as exc_info:
+        await client.search("Bundeskanzlei")
+    msg = str(exc_info.value)
+    assert "ConnectTimeout" in msg
+    assert "api.termdat.bk.admin.ch" in msg
+    assert not msg.rstrip().endswith(":")
+    assert isinstance(exc_info.value.__cause__, httpx.ConnectTimeout)
     await client.aclose()
 
 

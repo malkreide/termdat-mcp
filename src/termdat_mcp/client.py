@@ -107,8 +107,22 @@ async def fetch_with_retry(
                 "termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__
             )
     # OBS-002: log the concrete error to stderr, but do not leak it to the model.
-    log.error("termdat.unreachable", attempts=max_attempts, error=str(last_error))
-    raise UpstreamUnavailable(f"TERMDAT unreachable after {max_attempts} attempts.")
+    # OBS-007: name the *type* as well. httpx timeout and connect errors carry an
+    # empty ``str()``, so ``error=str(last_error)`` alone left this event — the
+    # one that matters — with an empty field, while the retry line above had the
+    # type all along. A structured event with a filled ``attempts`` field looks
+    # complete; an empty ``error`` field is easy to miss in JSON.
+    log.error(
+        "termdat.unreachable",
+        attempts=max_attempts,
+        host=urlsplit(url).hostname,
+        error_type=type(last_error).__name__,
+        error=str(last_error) or "no further detail",
+    )
+    raise UpstreamUnavailable(
+        f"TERMDAT unreachable after {max_attempts} attempts "
+        f"(host={urlsplit(url).hostname}): {type(last_error).__name__}"
+    ) from last_error
 
 
 def flatten_entry(raw: dict) -> dict:

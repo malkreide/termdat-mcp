@@ -37,6 +37,29 @@ ALLOWED_HOSTS = frozenset({"api.termdat.bk.admin.ch"})
 # we are not obliged to sit through.
 MAX_DELAY_S = 20.0
 
+# Ceiling on the *whole* call — every attempt, every wait, together.
+#
+# An attempt count is not a bound: four attempts at a 60s per-request timeout
+# plus backoff are over four minutes, and the number `4` never says so. Worse,
+# the relevant limit is not ours. The caller has its own timeout, and past it
+# nobody is listening any more — the work continues, the load lands on TERMDAT,
+# and the result goes nowhere.
+#
+# The anchor is measured, not guessed: the Python MCP SDK ships
+# ``MCP_DEFAULT_TIMEOUT = 30.0`` for general operations
+# (``mcp/shared/_httpx_utils.py``). 25s leaves headroom for MCP framing,
+# response parsing and the tool layer on top of the fetch.
+#
+# The trade-off is deliberate: a slow first attempt can consume the budget and
+# leave no room for a retry. That is the intended answer — a retry that
+# finishes after the caller gave up buys nothing and costs TERMDAT a request.
+TOTAL_BUDGET_S = 25.0
+
+# Per-operation ceiling (connect, read, write, pool) — httpx applies it to each,
+# not to the call as a whole. `TOTAL_BUDGET_S` bounds the whole call; the
+# effective per-attempt timeout is the smaller of the two.
+REQUEST_TIMEOUT_S = 25.0
+
 # Jitter spread. Without it every client that hit the same outage retries in
 # lockstep, and the load returns as a wave exactly when the API recovers — the
 # retry storm extends the outage it was meant to bridge.
@@ -150,20 +173,45 @@ def normalise_language(code: str, *, field: str = "language") -> str:
 
 
 async def fetch_with_retry(
-    http: httpx.AsyncClient, url: str, params: dict[str, Any] | None = None, *, max_attempts: int = 4
+    http: httpx.AsyncClient,
+    url: str,
+    params: dict[str, Any] | None = None,
+    *,
+    max_attempts: int = 4,
+    total_budget: float = TOTAL_BUDGET_S,
 ) -> httpx.Response:
     """GET with jittered exponential backoff (2s/4s/8s, capped at MAX_DELAY_S).
 
     A ``Retry-After`` sent by TERMDAT on a 429 or 503 overrides that curve; see
     :func:`retry_delay`. 4xx except 429 fails fast.
+
+    ``total_budget`` bounds the whole call — attempts and waits together — and
+    is the limit that actually matters: past the caller's own timeout nobody
+    receives the answer any more.
     """
     assert_host_allowed(url)  # SEC-021: enforce the egress allow-list per request
+    deadline = time.monotonic() + total_budget
     last_error: Exception | None = None
+    attempts = 0
     for attempt in range(max_attempts):
         if attempt > 0:
-            await asyncio.sleep(retry_delay(attempt, last_error))
+            delay = retry_delay(attempt, last_error)
+            # A wait that outlasts the budget is a wait for nobody: the caller
+            # has given up by the time it ends. Stop instead.
+            if delay >= deadline - time.monotonic():
+                break
+            await asyncio.sleep(delay)
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            break
+        attempts += 1
         try:
-            resp = await http.get(url, params=params)
+            # The budget wins over the per-operation ceiling once it is the
+            # tighter of the two — otherwise a single slow attempt could
+            # outlast the whole allowance.
+            resp = await http.get(
+                url, params=params, timeout=min(REQUEST_TIMEOUT_S, remaining)
+            )
             resp.raise_for_status()
             return resp
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
@@ -174,21 +222,36 @@ async def fetch_with_retry(
             log.warning(
                 "termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__
             )
+    if last_error is None:  # budget gone before a single request went out
+        raise UpstreamUnavailable(
+            f"TERMDAT not attempted: {total_budget:g}s budget already spent "
+            f"(host={urlsplit(url).hostname})"
+        )
     # OBS-002: log the concrete error to stderr, but do not leak it to the model.
     # OBS-007: name the *type* as well. httpx timeout and connect errors carry an
     # empty ``str()``, so ``error=str(last_error)`` alone left this event — the
     # one that matters — with an empty field, while the retry line above had the
     # type all along. A structured event with a filled ``attempts`` field looks
     # complete; an empty ``error`` field is easy to miss in JSON.
+    #
+    # Which limit ran out is part of that diagnosis: "all 4 attempts used" and
+    # "the budget ran out after 2" call for different fixes — more patience in
+    # the first case, a faster source or a wider budget in the second.
+    why = (
+        f"all {max_attempts} attempts used"
+        if attempts >= max_attempts
+        else f"{total_budget:g}s budget spent"
+    )
     log.error(
         "termdat.unreachable",
-        attempts=max_attempts,
+        attempts=attempts,
+        limit=why,
         host=urlsplit(url).hostname,
         error_type=type(last_error).__name__,
         error=str(last_error) or "no further detail",
     )
     raise UpstreamUnavailable(
-        f"TERMDAT unreachable after {max_attempts} attempts "
+        f"TERMDAT unreachable after {attempts} attempt(s), {why} "
         f"(host={urlsplit(url).hostname}): {type(last_error).__name__}"
     ) from last_error
 
@@ -239,7 +302,10 @@ class TermdatClient:
     async def _client(self) -> httpx.AsyncClient:
         if self._http is None:
             self._http = httpx.AsyncClient(
-                timeout=httpx.Timeout(60.0), headers={"User-Agent": f"termdat-mcp/{__version__}"}
+                # 60s used to sit here, above the whole retry budget — a value
+                # that only claimed what it no longer grants.
+                timeout=httpx.Timeout(REQUEST_TIMEOUT_S),
+                headers={"User-Agent": f"termdat-mcp/{__version__}"},
             )
         return self._http
 

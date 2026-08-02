@@ -130,3 +130,72 @@ async def test_404_still_fails_fast_without_waiting(slept):
             await c.fetch_with_retry(http, URL)
     assert route.call_count == 1
     assert slept == []
+
+
+# --- total budget (ARCH-014) ------------------------------------------------
+
+
+@pytest.fixture
+def fake_clock(monkeypatch):
+    """A clock that only advances when the client sleeps.
+
+    Without it the budget can never run out in a test: the ``_no_sleep`` fixture
+    in conftest.py makes sleeping free, so ``time.monotonic()`` never moves and
+    every deadline holds forever. The test would then pass whatever the budget
+    logic did — the same trap as the tautological guard in #26.
+    """
+    now = {"t": 1000.0}
+
+    async def _sleep(seconds):
+        now["t"] += seconds
+
+    monkeypatch.setattr(c.time, "monotonic", lambda: now["t"])
+    monkeypatch.setattr(c.asyncio, "sleep", _sleep)
+    return now
+
+
+@respx.mock
+async def test_budget_cuts_the_ladder_short(fake_clock):
+    """Fewer than max_attempts requests go out once the waits outlast the budget."""
+    route = respx.get(URL).mock(side_effect=httpx.ConnectTimeout(""))
+    with pytest.raises(c.UpstreamUnavailable) as exc_info:
+        async with httpx.AsyncClient() as http:
+            await c.fetch_with_retry(http, URL, total_budget=3.0)
+    assert route.call_count < 4, "budget did not bound the ladder"
+    assert route.call_count >= 1, "the first attempt must always go out"
+    assert "budget spent" in str(exc_info.value)
+    assert "3s" in str(exc_info.value)
+
+
+@respx.mock
+async def test_full_ladder_runs_when_the_budget_allows(fake_clock):
+    """Counter-direction: a wide budget must not cut anything short."""
+    route = respx.get(URL).mock(side_effect=httpx.ConnectTimeout(""))
+    with pytest.raises(c.UpstreamUnavailable) as exc_info:
+        async with httpx.AsyncClient() as http:
+            await c.fetch_with_retry(http, URL, total_budget=600.0)
+    assert route.call_count == 4
+    assert "all 4 attempts used" in str(exc_info.value)
+
+
+@respx.mock
+async def test_per_attempt_timeout_is_clamped_to_the_remaining_budget(fake_clock):
+    """A single attempt may not be granted more time than the budget has left."""
+    route = respx.get(URL).mock(return_value=httpx.Response(200, json=[]))
+    async with httpx.AsyncClient() as http:
+        await c.fetch_with_retry(http, URL, total_budget=4.0)
+    sent = route.calls.last.request.extensions["timeout"]
+    assert sent["read"] == pytest.approx(4.0), sent
+
+
+def test_default_budget_stays_under_the_mcp_client_default():
+    """The budget is only meaningful relative to the caller's own timeout.
+
+    ``MCP_DEFAULT_TIMEOUT`` is what the Python MCP SDK grants a general
+    operation. A budget at or above it would let the server work past the point
+    where its answer can still be delivered.
+    """
+    from mcp.shared._httpx_utils import MCP_DEFAULT_TIMEOUT
+
+    assert c.TOTAL_BUDGET_S < MCP_DEFAULT_TIMEOUT
+    assert c.REQUEST_TIMEOUT_S <= c.TOTAL_BUDGET_S

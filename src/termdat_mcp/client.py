@@ -108,10 +108,12 @@ def retry_delay(attempt: int, last_error: Exception | None) -> float:
     """
     hinted = parse_retry_after(getattr(last_error, "response", None))
     if hinted is not None:
-        capped = min(hinted, MAX_DELAY_S)
-        return capped * (1.0 + random.random() * RETRY_AFTER_JITTER)
-    capped = min(float(2**attempt), MAX_DELAY_S)
-    return capped * (1.0 - JITTER_SPREAD + random.random() * 2 * JITTER_SPREAD)
+        jittered = hinted * (1.0 + random.random() * RETRY_AFTER_JITTER)
+    else:
+        jittered = float(2**attempt) * (1.0 - JITTER_SPREAD + random.random() * 2 * JITTER_SPREAD)
+    # Cap *after* jitter. The other order made MAX_DELAY_S not a bound at all:
+    # a value capped at 20s was then multiplied by up to 1.5 and landed at 30s.
+    return min(jittered, MAX_DELAY_S)
 
 
 class EgressNotAllowed(RuntimeError):
@@ -207,12 +209,21 @@ async def fetch_with_retry(
             break
         attempts += 1
         try:
-            # The budget wins over the per-operation ceiling once it is the
-            # tighter of the two — otherwise a single slow attempt could
-            # outlast the whole allowance.
-            resp = await http.get(url, params=params, timeout=min(REQUEST_TIMEOUT_S, remaining))
+            # httpx applies its timeout per operation (connect/read/write/pool)
+            # and the read timeout restarts with every chunk — that bounds each
+            # step, not the call, so a slowly trickling response could outlast
+            # the budget. `asyncio.wait_for` is the wall-clock deadline the
+            # budget actually promises; `asyncio.timeout` would read better but
+            # arrived in 3.11 and this package still supports 3.10.
+            resp = await asyncio.wait_for(
+                http.get(url, params=params, timeout=min(REQUEST_TIMEOUT_S, remaining)),
+                timeout=remaining,
+            )
             resp.raise_for_status()
             return resp
+        except (asyncio.TimeoutError, TimeoutError) as exc:  # budget gone
+            last_error = exc
+            break
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
             last_error = exc
             status = getattr(getattr(exc, "response", None), "status_code", None)

@@ -39,6 +39,7 @@ def assert_host_allowed(url: str) -> None:
     if parts.hostname not in ALLOWED_HOSTS:
         raise EgressNotAllowed(f"host not in egress allow-list: {parts.hostname!r}")
 
+
 VALID_LANGUAGES = ("DE", "FR", "IT", "EN", "RM", "LA")
 
 # The 11 searchable fields exposed by the API as Field.* boolean flags.
@@ -103,9 +104,7 @@ async def fetch_with_retry(
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status is not None and 400 <= status < 500 and status != 429:
                 raise
-            log.warning(
-                "termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__
-            )
+            log.warning("termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__)
     # OBS-002: log the concrete error to stderr, but do not leak it to the model.
     # OBS-007: name the *type* as well. httpx timeout and connect errors carry an
     # empty ``str()``, so ``error=str(last_error)`` alone left this event — the

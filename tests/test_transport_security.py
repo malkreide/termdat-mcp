@@ -61,7 +61,7 @@ def test_configured_cors_origin_passes_transport_check():
 
 
 def test_wildcard_cors_is_not_copied():
-    """"*" is matched literally by the SDK, so copying it would look like a
+    """ "*" is matched literally by the SDK, so copying it would look like a
     wildcard while doing nothing."""
     sec = build_transport_security(_cfg(cors_allow_origins=["*"]))
     assert "*" not in sec.allowed_origins

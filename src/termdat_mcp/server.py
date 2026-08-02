@@ -150,17 +150,13 @@ async def search_terms(
 
 
 @mcp.tool(annotations=_READ_ONLY)
-async def get_entries(
-    entry_ids: _EntryIds, in_language: str = "DE", out_language: str = ""
-) -> SearchResult:
+async def get_entries(entry_ids: _EntryIds, in_language: str = "DE", out_language: str = "") -> SearchResult:
     """Fetch known TERMDAT entries by their numeric IDs, with full language variants.
 
     Use this to re-retrieve an entry you already found via `search_terms` (its
     `entry_id`), e.g. to pull all four national-language designations at once.
     """
-    entries, retrieved_at = await _client.entries(
-        entry_ids, in_language, out_language or None
-    )
+    entries, retrieved_at = await _client.entries(entry_ids, in_language, out_language or None)
     return SearchResult(
         provenance="live_api",
         retrieved_at=retrieved_at,
@@ -201,7 +197,7 @@ async def translate_term(
         variants = [v for v in entry["variants"] if v["language"] == target and v["name"]]
         if not variants:
             continue
-        variants.sort(key=lambda v: (v.get("sequence") or 99))
+        variants.sort(key=lambda v: v.get("sequence") or 99)
         preferred = variants[0]["name"] if (variants[0].get("sequence") or 99) == 1 else None
         hits.append(
             TranslationHit(

@@ -158,9 +158,7 @@ async def test_default_fields_include_free_text_fields():
 
 @respx.mock
 async def test_search_retries_after_503():
-    respx.get(SEARCH_URL).mock(
-        side_effect=[httpx.Response(503), httpx.Response(200, json=[RAW_ENTRY])]
-    )
+    respx.get(SEARCH_URL).mock(side_effect=[httpx.Response(503), httpx.Response(200, json=[RAW_ENTRY])])
     client = TermdatClient(http=httpx.AsyncClient())
     entries, _ = await client.search("Bundeskanzlei")
     assert len(entries) == 1

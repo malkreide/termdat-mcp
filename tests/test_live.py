@@ -28,9 +28,7 @@ async def test_out_language_is_additive_not_filtering():
     """Regression guard for the probe finding of 2026-07-19."""
     client = TermdatClient()
     without, _ = await client.search("Departement", "DE", max_results=1000)
-    with_fr, _ = await client.search(
-        "Departement", "DE", out_language="FR", detail=True, max_results=1000
-    )
+    with_fr, _ = await client.search("Departement", "DE", out_language="FR", detail=True, max_results=1000)
     assert len(without) == len(with_fr), "OutLanguageCode must not change the result count"
     assert any(v["language"] == "FR" for e in with_fr for v in e["variants"]), (
         "OutLanguageCode adds target-language variants — but only with ReturnType=Detail"

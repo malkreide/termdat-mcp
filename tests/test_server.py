@@ -101,7 +101,9 @@ async def test_list_collections_and_classifications(mocked_client):
 
 @respx.mock
 async def test_api_status_reachable(mocked_client):
-    respx.get(COLLECTION_URL).mock(return_value=httpx.Response(200, json=[{"id": 1, "code": "A", "text": "x"}]))
+    respx.get(COLLECTION_URL).mock(
+        return_value=httpx.Response(200, json=[{"id": 1, "code": "A", "text": "x"}])
+    )
     respx.get(CLASSIFICATION_URL).mock(
         return_value=httpx.Response(200, json=[{"id": 16, "code": "BILD", "text": "Bildung"}])
     )

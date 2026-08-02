@@ -126,6 +126,7 @@ def assert_host_allowed(url: str) -> None:
     if parts.hostname not in ALLOWED_HOSTS:
         raise EgressNotAllowed(f"host not in egress allow-list: {parts.hostname!r}")
 
+
 VALID_LANGUAGES = ("DE", "FR", "IT", "EN", "RM", "LA")
 
 # The 11 searchable fields exposed by the API as Field.* boolean flags.
@@ -209,9 +210,7 @@ async def fetch_with_retry(
             # The budget wins over the per-operation ceiling once it is the
             # tighter of the two — otherwise a single slow attempt could
             # outlast the whole allowance.
-            resp = await http.get(
-                url, params=params, timeout=min(REQUEST_TIMEOUT_S, remaining)
-            )
+            resp = await http.get(url, params=params, timeout=min(REQUEST_TIMEOUT_S, remaining))
             resp.raise_for_status()
             return resp
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
@@ -219,13 +218,10 @@ async def fetch_with_retry(
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status is not None and 400 <= status < 500 and status != 429:
                 raise
-            log.warning(
-                "termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__
-            )
+            log.warning("termdat.request_retry", attempt=attempt + 1, status=status, error=type(exc).__name__)
     if last_error is None:  # budget gone before a single request went out
         raise UpstreamUnavailable(
-            f"TERMDAT not attempted: {total_budget:g}s budget already spent "
-            f"(host={urlsplit(url).hostname})"
+            f"TERMDAT not attempted: {total_budget:g}s budget already spent (host={urlsplit(url).hostname})"
         )
     # OBS-002: log the concrete error to stderr, but do not leak it to the model.
     # OBS-007: name the *type* as well. httpx timeout and connect errors carry an
@@ -238,9 +234,7 @@ async def fetch_with_retry(
     # "the budget ran out after 2" call for different fixes — more patience in
     # the first case, a faster source or a wider budget in the second.
     why = (
-        f"all {max_attempts} attempts used"
-        if attempts >= max_attempts
-        else f"{total_budget:g}s budget spent"
+        f"all {max_attempts} attempts used" if attempts >= max_attempts else f"{total_budget:g}s budget spent"
     )
     log.error(
         "termdat.unreachable",

@@ -85,9 +85,7 @@ class TestRetryDelay:
         draws = {c.retry_delay(2, None) for _ in range(30)}
         assert len(draws) > 1, "delay is deterministic — jitter is not applied"
         base = 4.0
-        assert all(
-            base * (1 - c.JITTER_SPREAD) <= d <= base * (1 + c.JITTER_SPREAD) for d in draws
-        )
+        assert all(base * (1 - c.JITTER_SPREAD) <= d <= base * (1 + c.JITTER_SPREAD) for d in draws)
 
 
 @pytest.fixture

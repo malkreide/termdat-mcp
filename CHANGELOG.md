@@ -6,6 +6,26 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Behoben
+
+- **Der 20-Sekunden-Deckel war keine Grenze.** Gedeckelt wurde *vor* dem
+  Jittern, also wurde ein auf `MAX_DELAY_S` gedeckelter Wert anschliessend mit
+  bis zu 1.5 multipliziert: exponentielle Wartezeiten bis 30 s,
+  `Retry-After`-Wartezeiten bis 25 s. Neu wird nach dem Jittern gedeckelt.
+
+- **Das Gesamtbudget war nicht garantiert.** `httpx` wendet sein Timeout pro
+  Operation an, und das Read-Timeout beginnt mit jedem Chunk von vorn — eine
+  langsam troepfelnde Antwort konnte das Budget ueberdauern, ohne dass ein
+  einzelner Read ablief. Neu liegt eine `asyncio.wait_for`-Deadline um den
+  Request. (`asyncio.timeout` laese sich besser, kam aber erst in 3.11; dieses
+  Paket unterstuetzt weiterhin 3.10.)
+
+  Beide Befunde stammen aus einem Codex-Review an `parlament-mcp#35`. Der Test
+  zur Deadline musste die *echte* `asyncio.sleep` festhalten, bevor die
+  autouse-`_no_sleep`-Fixture aus `conftest.py` sie ersetzt — sonst waere auch
+  dieser Test gruen gewesen, ohne etwas zu pruefen.
+
+
 ### Added
 
 - **`Retry-After` wird gelesen und schlaegt die eigene Backoff-Kurve** (ARCH-014).

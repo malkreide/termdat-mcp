@@ -8,6 +8,7 @@ the client asked to wait. Applied later, it wins; both are undone at teardown.
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 
@@ -16,6 +17,9 @@ import pytest
 import respx
 
 from termdat_mcp import client as c
+
+#: Captured before any fixture can patch `asyncio.sleep` (see conftest.py).
+_REAL_SLEEP = asyncio.sleep
 
 URL = f"{c.BASE_URL}/Search"
 
@@ -70,15 +74,29 @@ class TestRetryDelay:
             assert c.retry_delay(1, exc) >= 5.0
 
     def test_absurd_retry_after_is_capped(self):
-        # Both bounds matter: the upper proves the cap binds, the lower proves
-        # the header was read at all — without it the curve's 2s would pass.
+        # Exactly the cap, not "the cap times jitter": capping happens after
+        # jitter, otherwise MAX_DELAY_S would not be a bound at all. Equality
+        # still discriminates — the bare curve gives 2s here.
         exc = httpx.HTTPStatusError("503", request=None, response=_resp(503, "86400"))
-        delay = c.retry_delay(1, exc)
-        assert c.MAX_DELAY_S <= delay <= c.MAX_DELAY_S * (1 + c.RETRY_AFTER_JITTER)
+        assert c.retry_delay(1, exc) == c.MAX_DELAY_S
 
     def test_exponential_ladder_is_capped(self):
         # 2**10 would be 1024s without a cap.
-        assert c.retry_delay(10, None) <= c.MAX_DELAY_S * (1 + c.JITTER_SPREAD)
+        for _ in range(30):
+            assert c.retry_delay(10, None) <= c.MAX_DELAY_S
+
+    def test_the_cap_is_a_real_bound_not_a_midpoint(self):
+        """MAX_DELAY_S must hold even when jitter swings up.
+
+        Capping before jitter let a 20s ceiling grow to 30s on the exponential
+        path and 25s on the ``Retry-After`` path. Found by a Codex review on
+        ``parlament-mcp#35``, on the pattern this repo helped spread.
+        """
+        exc = httpx.HTTPStatusError("429", request=None, response=_resp(429, "86400"))
+        for attempt in range(1, 8):
+            for _ in range(20):
+                assert c.retry_delay(attempt, None) <= c.MAX_DELAY_S
+                assert c.retry_delay(attempt, exc) <= c.MAX_DELAY_S
 
     def test_delay_is_spread(self):
         """Without jitter every client retries in lockstep. Draws must differ."""
@@ -197,3 +215,35 @@ def test_default_budget_stays_under_the_mcp_client_default():
 
     assert c.TOTAL_BUDGET_S < MCP_DEFAULT_TIMEOUT
     assert c.REQUEST_TIMEOUT_S <= c.TOTAL_BUDGET_S
+
+
+@respx.mock
+async def test_a_slow_response_is_cut_by_the_wall_clock_deadline():
+    """The budget must bind even when the httpx timeout never fires.
+
+    httpx applies its timeout per operation and the read timeout restarts with
+    every chunk, so a slowly trickling response can outlast the total budget
+    without any single read timing out.
+
+    Deliberately without ``fake_clock``: this guarantee is about real time, and
+    a clock that only moves when something sleeps cannot refute it — that blind
+    spot is why the counter-checks missed this.
+    """
+    import time as real_time
+
+    async def _slow(request):
+        # `_REAL_SLEEP` and not `asyncio.sleep`: the autouse `_no_sleep` fixture
+        # in conftest.py patches the module attribute, so an ordinary
+        # `asyncio.sleep` here would be instant and this test would pass
+        # without the deadline doing anything. Captured at import, before any
+        # fixture runs.
+        await _REAL_SLEEP(1.0)
+        return httpx.Response(200, json=[])
+
+    respx.get(URL).mock(side_effect=_slow)
+    started = real_time.monotonic()
+    async with httpx.AsyncClient() as http:
+        with pytest.raises(c.UpstreamUnavailable):
+            await c.fetch_with_retry(http, URL, total_budget=0.05)
+    elapsed = real_time.monotonic() - started
+    assert elapsed < 0.5, f"deadline did not cut: {elapsed:.2f}s"

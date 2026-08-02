@@ -6,6 +6,31 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **`Retry-After` wird gelesen und schlaegt die eigene Backoff-Kurve** (ARCH-014).
+  Bei 429 und 503 sagt TERMDAT im Header, wann es wieder mag — als Sekundenzahl
+  oder HTTP-Datum; beide Formen kommen vor, beide werden gelesen
+  (RFC 9110 §10.2.3). Wer stattdessen weiter seine Kurve faehrt, ignoriert eine
+  ausdrueckliche Angabe. Ein unbrauchbarer Header fuehrt zurueck auf die Kurve
+  statt zum Absturz — auf dem Fehlerpfad darf eine kaputte Kopfzeile nicht das
+  Letzte sein, woran der Client stirbt.
+
+- **Backoff ist gestreut (Jitter).** `2**attempt` war deterministisch: Faellt
+  die API aus, waehrend mehrere Clients sie abfragen, retryen alle im
+  Gleichtakt, und die Last kommt als Welle zurueck — genau wenn die API sich
+  erholt. Exponentielle Wartezeiten landen jetzt in `[0.5x, 1.5x]`. Auf einem
+  `Retry-After` ist die Streuung einseitig (`[1.0x, 1.25x]`): spaeter ist
+  hoeflich, frueher waere die Missachtung derselben Angabe, die man gerade
+  gelesen hat.
+
+- **Deckel von 20 s auf jede einzelne Wartezeit** — gegen die unbegrenzt
+  wachsende Leiter und gegen ein `Retry-After`, das die API senden darf, das man
+  aber nicht absitzen muss.
+
+  Offen aus ARCH-014 bleibt ein **Gesamtbudget** ueber den ganzen Aufruf, das
+  unter dem Timeout des aufrufenden MCP-Clients liegt.
+
 ## [0.1.3] - 2026-08-02
 
 ### Fixed

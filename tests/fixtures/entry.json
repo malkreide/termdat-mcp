@@ -1,0 +1,73 @@
+[
+  {
+    "id": 106213,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/106213?s=EntryId:106213",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "subject": [
+      {
+        "id": 5,
+        "text": "MEDIZIN",
+        "domains": [
+          {
+            "id": 38,
+            "text": "Pathologie"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "text": "BILDUNG",
+        "domains": [
+          {
+            "id": 159,
+            "text": "Behörden / Institutionen / Organisationen / Unternehmen"
+          },
+          {
+            "id": 160,
+            "text": "Grundschule"
+          }
+        ]
+      }
+    ],
+    "languageDetails": [
+      {
+        "id": 350675,
+        "languageIsoCode": "DE",
+        "sequence": 1,
+        "name": "Stiftung Schweizer Zentrum für Heil- und Sonderpädagogik",
+        "nameSource": "SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))",
+        "note": "USG: offiziell; EXP: 2009 gegründet; Trägerin des Schweizer Zentrums für Heil- und Sonderpädagogik (SZH)",
+        "noteSource": "nach SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))",
+        "references": [
+          {
+            "type": "<leer>",
+            "text": "Schweizer Zentrum für Heil- und Sonderpädagogik",
+            "url": "https://www.termdat.bk.admin.ch/search/entry/106213?s=EntryId:106213"
+          }
+        ]
+      }
+    ]
+  }
+]

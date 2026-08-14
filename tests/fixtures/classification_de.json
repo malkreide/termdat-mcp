@@ -1,0 +1,117 @@
+[
+  {
+    "id": 1,
+    "code": "BAUW",
+    "text": "BAUWESEN"
+  },
+  {
+    "id": 2,
+    "code": "BILD",
+    "text": "BILDUNG"
+  },
+  {
+    "id": 24,
+    "code": "ENERG",
+    "text": "ENERGIE"
+  },
+  {
+    "id": 3,
+    "code": "FINA",
+    "text": "FINANZWESEN"
+  },
+  {
+    "id": 4,
+    "code": "INFO",
+    "text": "INFORMATIONSTECHNOLOGIE"
+  },
+  {
+    "id": 22,
+    "code": "INNO",
+    "text": "FORSCHUNG UND INNOVATION"
+  },
+  {
+    "id": 5,
+    "code": "INTE",
+    "text": "INTERNATIONALE ORGANISATIONEN"
+  },
+  {
+    "id": 6,
+    "code": "KOMM",
+    "text": "KOMMUNIKATION"
+  },
+  {
+    "id": 7,
+    "code": "LAND",
+    "text": "LANDWIRTSCHAFT"
+  },
+  {
+    "id": 8,
+    "code": "MEDI",
+    "text": "MEDIZIN"
+  },
+  {
+    "id": 23,
+    "code": "NORM",
+    "text": "NORMEN UND MESSEN"
+  },
+  {
+    "id": 10,
+    "code": "OFFE",
+    "text": "ÖFFENTLICHE SICHERHEIT"
+  },
+  {
+    "id": 11,
+    "code": "POLI",
+    "text": "POLITIK"
+  },
+  {
+    "id": 12,
+    "code": "RECH",
+    "text": "RECHT"
+  },
+  {
+    "id": 13,
+    "code": "SOZI",
+    "text": "SOZIALVERSICHERUNGEN"
+  },
+  {
+    "id": 14,
+    "code": "SPOR",
+    "text": "SPORT UND SPIEL"
+  },
+  {
+    "id": 15,
+    "code": "UMWE",
+    "text": "UMWELT"
+  },
+  {
+    "id": 16,
+    "code": "VARI",
+    "text": "VARIA"
+  },
+  {
+    "id": 17,
+    "code": "VERK",
+    "text": "VERKEHR UND TRANSPORT"
+  },
+  {
+    "id": 18,
+    "code": "VERT",
+    "text": "VERTEIDIGUNG"
+  },
+  {
+    "id": 19,
+    "code": "VERW",
+    "text": "ÖFFENTLICHE VERWALTUNG"
+  },
+  {
+    "id": 20,
+    "code": "WIRT",
+    "text": "WIRTSCHAFT"
+  },
+  {
+    "id": 21,
+    "code": "WISS",
+    "text": "WISSENSCHAFTEN"
+  }
+]

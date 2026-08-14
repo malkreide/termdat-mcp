@@ -1,0 +1,702 @@
+[
+  {
+    "id": 10438,
+    "code": "ABR18v",
+    "text": "Abkürzungen der Titel der Bundeserlasse (aufgehoben)"
+  },
+  {
+    "id": 90,
+    "code": "ABR24",
+    "text": "Abkürzungen der Titel der Bundeserlasse"
+  },
+  {
+    "id": 102,
+    "code": "ADFA23",
+    "text": "Bezeichnungen der Organisationseinheiten der Bundesverwaltung"
+  },
+  {
+    "id": 101,
+    "code": "ADFB23",
+    "text": "Bezeichnungen der Organisationseinheiten der Bundesverwaltung"
+  },
+  {
+    "id": 10403,
+    "code": "AHV18",
+    "text": "Terminologie der AHV/IV"
+  },
+  {
+    "id": 11514,
+    "code": "AMVER25",
+    "text": "Terminologie der amtlichen Vermessung"
+  },
+  {
+    "id": 135,
+    "code": "API95",
+    "text": "Terminologie der Bienenzucht"
+  },
+  {
+    "id": 11447,
+    "code": "APPU19",
+    "text": "Terminologie des öffentlichen Beschaffungswesens"
+  },
+  {
+    "id": 10399,
+    "code": "ARB17",
+    "text": "Terminologie des schweizerischen Arbeitsrechts"
+  },
+  {
+    "id": 138,
+    "code": "ARCH26",
+    "text": "Terminologie der Archivierung"
+  },
+  {
+    "id": 153,
+    "code": "ASY25",
+    "text": "Terminologie des schweizerischen Asylrechts"
+  },
+  {
+    "id": 157,
+    "code": "ATOM23",
+    "text": "Terminologie der nuklearen Entsorgung"
+  },
+  {
+    "id": 160,
+    "code": "AUS25",
+    "text": "Terminologie des schweizerischen Ausländerrechts"
+  },
+  {
+    "id": 10365,
+    "code": "AUT24",
+    "text": "Bezeichnungen der schweizerischen Bundesbehörden (ohne Bundesverwaltung)"
+  },
+  {
+    "id": 11507,
+    "code": "AUTCA25",
+    "text": "Bezeichnungen der schweizerischen Kantons- und Gemeindebehörden"
+  },
+  {
+    "id": 11501,
+    "code": "BAG24",
+    "text": "Terminologie des BAG"
+  },
+  {
+    "id": 1215,
+    "code": "BAHN26",
+    "text": "Eisenbahnterminologie"
+  },
+  {
+    "id": 204,
+    "code": "BAU09",
+    "text": "Terminologie der Interkantonalen Vereinbarung über die Harmonisierung der Baubegriffe"
+  },
+  {
+    "id": 10391,
+    "code": "BAU17",
+    "text": "Terminologie des Bauwesens"
+  },
+  {
+    "id": 207,
+    "code": "BBL08",
+    "text": "Terminologie des Immobilienmanagements"
+  },
+  {
+    "id": 10406,
+    "code": "BBLFF17",
+    "text": "Terminologie des Bundesblattes"
+  },
+  {
+    "id": 210,
+    "code": "BDS05",
+    "text": "Terminologie der Dämmstoffe"
+  },
+  {
+    "id": 10374,
+    "code": "BELA16",
+    "text": "Terminologie Behelf Sachbereich Lage"
+  },
+  {
+    "id": 11504,
+    "code": "BFE25",
+    "text": "Terminologie du Bundesamt für Energie "
+  },
+  {
+    "id": 11448,
+    "code": "BILD18",
+    "text": "Terminologie des Bildungswesens"
+  },
+  {
+    "id": 11460,
+    "code": "BIOME20",
+    "text": "Terminologie der Biomedizin"
+  },
+  {
+    "id": 243,
+    "code": "BPG17",
+    "text": "Terminologie des Bundespersonalrechts"
+  },
+  {
+    "id": 244,
+    "code": "BRG26",
+    "text": "Terminologie der Richtlinien für die Vorbereitung und Erledigung der Bundesratsgeschäfte"
+  },
+  {
+    "id": 309,
+    "code": "BUD11",
+    "text": "Terminologie der eidgenössischen Staatsrechnung und des Budgets"
+  },
+  {
+    "id": 10389,
+    "code": "BVG17",
+    "text": "Terminologie der Gesetzgebung der beruflichen Vorsorge"
+  },
+  {
+    "id": 10445,
+    "code": "BVZ24",
+    "text": "Offizielle Berufsbezeichnungen des SBFI (Titel)"
+  },
+  {
+    "id": 334,
+    "code": "CAB17",
+    "text": "Terminologie der Seilbahnen"
+  },
+  {
+    "id": 10357,
+    "code": "CHIM25",
+    "text": "Terminologie der Chemikaliengesetzgebung"
+  },
+  {
+    "id": 11490,
+    "code": "CPC23",
+    "text": "Terminologie der schweizerischen Zivilprozessordnung"
+  },
+  {
+    "id": 401,
+    "code": "CPP18",
+    "text": "Terminologie der schweizerischen Strafprozessordnung"
+  },
+  {
+    "id": 10433,
+    "code": "CURIA18",
+    "text": "Curia Vista, Geschäftsdatenbank des Parlaments"
+  },
+  {
+    "id": 11466,
+    "code": "CYBER25",
+    "text": "Terminologie der Cybersicherheit"
+  },
+  {
+    "id": 10443,
+    "code": "DEC19",
+    "text": "Terminologie der Abfallentsorgung"
+  },
+  {
+    "id": 10413,
+    "code": "DENDR18",
+    "text": "Dendrochronologie-Glossar"
+  },
+  {
+    "id": 11488,
+    "code": "DIGIT22",
+    "text": "Terminologie der Digitalisierung"
+  },
+  {
+    "id": 11502,
+    "code": "DIM25",
+    "text": "Daten- und Informationsmanagement"
+  },
+  {
+    "id": 11456,
+    "code": "DROIT21",
+    "text": "Rechtsterminologie"
+  },
+  {
+    "id": 497,
+    "code": "DRU02",
+    "text": "Terminologie der Schweizer Drogenpolitik (BAG)"
+  },
+  {
+    "id": 501,
+    "code": "DSCHU24",
+    "text": "Terminologie der Gesetzgebung über den Datenschutz"
+  },
+  {
+    "id": 431,
+    "code": "DURAB21",
+    "text": "Terminologie der nachhaltigen Entwicklung"
+  },
+  {
+    "id": 10419,
+    "code": "ECON18",
+    "text": "Wirtschaftsterminologie"
+  },
+  {
+    "id": 10428,
+    "code": "EGA18",
+    "text": "Terminologie der Gleichstellung von Frau und Mann"
+  },
+  {
+    "id": 10386,
+    "code": "EGOV19",
+    "text": "E-Government-Terminologie"
+  },
+  {
+    "id": 11489,
+    "code": "ENR22",
+    "text": "Terminologie der Energie"
+  },
+  {
+    "id": 3058,
+    "code": "ERB18",
+    "text": "Terminologie des Erbrechts"
+  },
+  {
+    "id": 11498,
+    "code": "ESMOG24",
+    "text": "Terminologie des Elektrosmogs"
+  },
+  {
+    "id": 581,
+    "code": "EWB17",
+    "text": "Eidgenössisches Wörterbüchlein"
+  },
+  {
+    "id": 10331,
+    "code": "FAMI14",
+    "text": "Terminologie des Schweizerischen Zivilgesetzbuchs (Familienrecht)"
+  },
+  {
+    "id": 11453,
+    "code": "FAMZU19",
+    "text": "Terminologie der Familienzulagen"
+  },
+  {
+    "id": 594,
+    "code": "FAU02",
+    "text": "Terminologie der Fauna (BAFU)"
+  },
+  {
+    "id": 11445,
+    "code": "FHS19",
+    "text": "Terminologie der Fachhochschulen"
+  },
+  {
+    "id": 11477,
+    "code": "FIBS21",
+    "text": "Terminologie des Handbuchs Führung im Bevölkerungsschutz"
+  },
+  {
+    "id": 11467,
+    "code": "FIF20",
+    "text": "Terminologie der Forschungs- und Innovationsförderung"
+  },
+  {
+    "id": 626,
+    "code": "FMA16",
+    "text": "Terminologie der Finanzmarktaufsicht"
+  },
+  {
+    "id": 10390,
+    "code": "FMG17",
+    "text": "Terminologie des Fernmeldewesens"
+  },
+  {
+    "id": 11465,
+    "code": "FORME21",
+    "text": "Terminologie der Fortpflanzungsmedizin"
+  },
+  {
+    "id": 11457,
+    "code": "GENTE20",
+    "text": "Terminologie der Gentechnik im Ausserhumanbereich"
+  },
+  {
+    "id": 10436,
+    "code": "GEOD19",
+    "text": "Terminologie der Geodäsie"
+  },
+  {
+    "id": 11492,
+    "code": "GEOL23",
+    "text": "Terminologie der Geologie"
+  },
+  {
+    "id": 10292,
+    "code": "GEV12",
+    "text": "GEVER System"
+  },
+  {
+    "id": 10333,
+    "code": "GRF19",
+    "text": "Grundbuch-Terminologie"
+  },
+  {
+    "id": 10415,
+    "code": "GSVBS18",
+    "text": "Terminologie des GS-VBS"
+  },
+  {
+    "id": 684,
+    "code": "GVK05",
+    "text": "Terminologie des Gesamtverkehrs"
+  },
+  {
+    "id": 10358,
+    "code": "GWG15",
+    "text": "Terminologie der Geldwäscherei und Terrorismusfinanzierung"
+  },
+  {
+    "id": 688,
+    "code": "GWS01",
+    "text": "Terminologie des Gewässerschutzes"
+  },
+  {
+    "id": 10314,
+    "code": "HER14",
+    "text": "HERMES-Terminologie"
+  },
+  {
+    "id": 10387,
+    "code": "HOCHB16",
+    "text": "Terminologie der Bauwerksdokumentation im Hochbau"
+  },
+  {
+    "id": 11468,
+    "code": "INFEC20",
+    "text": "Terminologie der übertragbaren Krankheiten"
+  },
+  {
+    "id": 10323,
+    "code": "INI24",
+    "text": "Titel der eidgenössischen Volksinitiativen"
+  },
+  {
+    "id": 10405,
+    "code": "IRS17",
+    "text": "Terminologie der internationalen Rechtshilfe in Strafsachen"
+  },
+  {
+    "id": 749,
+    "code": "ISB04",
+    "text": "Informatik-Terminologie der Bundesverwaltung"
+  },
+  {
+    "id": 10442,
+    "code": "IUFRO19",
+    "text": "Terminologie der Forsteinrichtung"
+  },
+  {
+    "id": 812,
+    "code": "KAR24",
+    "text": "Terminologie des Kartellrechts"
+  },
+  {
+    "id": 11487,
+    "code": "KLIMA22",
+    "text": "Terminologie des Klimawandels"
+  },
+  {
+    "id": 822,
+    "code": "KOM24",
+    "text": "Bezeichnungen der parlamentarischen und ausserparlamentarischen Kommissionen"
+  },
+  {
+    "id": 1263,
+    "code": "KRIMI18",
+    "text": "Terminologie der Kriminalstatistik"
+  },
+  {
+    "id": 11500,
+    "code": "LÄRM25",
+    "text": "Terminologie des Lärmschutzes "
+  },
+  {
+    "id": 10401,
+    "code": "LDA17",
+    "text": "Urheberrecht"
+  },
+  {
+    "id": 1720,
+    "code": "LOICH24",
+    "text": "Titel der Erlasse des schweizerischen Bundesrechts"
+  },
+  {
+    "id": 11491,
+    "code": "LUFT24",
+    "text": "Terminologie der Luftreinhaltung"
+  },
+  {
+    "id": 11478,
+    "code": "MEDAP21",
+    "text": "Terminologie der Medizin (Anatomie, Pathologie)"
+  },
+  {
+    "id": 10342,
+    "code": "MET16",
+    "text": "Terminologie der Metrologie"
+  },
+  {
+    "id": 10326,
+    "code": "METE14",
+    "text": "Terminologie der Meteorologie"
+  },
+  {
+    "id": 10397,
+    "code": "MIET17",
+    "text": "Terminologie des Mietrechts"
+  },
+  {
+    "id": 948,
+    "code": "MOF98",
+    "text": "Terminologie der schweizerischen amtlichen Vermessung"
+  },
+  {
+    "id": 960,
+    "code": "MWST22",
+    "text": "Terminologie der Mehrwertsteuer"
+  },
+  {
+    "id": 10429,
+    "code": "NADI18",
+    "text": "Terminologie des Nachrichtendienstes"
+  },
+  {
+    "id": 11493,
+    "code": "NAS23",
+    "text": "Nachhaltigkeit und Erfolgskontrolle im Schutzwald (BAFU)"
+  },
+  {
+    "id": 1870,
+    "code": "NUC23",
+    "text": "Terminologie der Kernanlagen"
+  },
+  {
+    "id": 10383,
+    "code": "OEREB16",
+    "text": "Terminologie des ÖREB-Katasters"
+  },
+  {
+    "id": 1029,
+    "code": "OMC24",
+    "text": "WTO-Terminologie"
+  },
+  {
+    "id": 10439,
+    "code": "ONU18",
+    "text": "Bezeichnungen der UNO-Organe"
+  },
+  {
+    "id": 11451,
+    "code": "ORGCH19",
+    "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+  },
+  {
+    "id": 10385,
+    "code": "ORGIN19",
+    "text": "Bezeichnungen internationaler Organisationen und Institutionen"
+  },
+  {
+    "id": 10336,
+    "code": "ORV19",
+    "text": "Terminologie des Obligationenrechts"
+  },
+  {
+    "id": 10368,
+    "code": "ORVER17",
+    "text": "Terminologie des Obligationenrechts (Verträge)"
+  },
+  {
+    "id": 1067,
+    "code": "PAI05",
+    "text": "Eiskunstlaufglossar – Einzellauf (Sprünge und Pirouetten)"
+  },
+  {
+    "id": 10398,
+    "code": "PARTI17",
+    "text": "Politische Parteien der Schweiz"
+  },
+  {
+    "id": 2598,
+    "code": "PDA12",
+    "text": "Terminologie des Erwachsenenschutzrechts"
+  },
+  {
+    "id": 10430,
+    "code": "PDAM18",
+    "text": "Terminologie des Kindes- und Erwachsenenschutzrechts"
+  },
+  {
+    "id": 1088,
+    "code": "PEN15",
+    "text": "Terminologie des schweizerischen Strafrechts"
+  },
+  {
+    "id": 1093,
+    "code": "PFS17",
+    "text": "Schweizerische parlamentarische Terminologie"
+  },
+  {
+    "id": 10316,
+    "code": "PGG14",
+    "text": "Terminologie der Postgesetzgebung"
+  },
+  {
+    "id": 11462,
+    "code": "PNR24",
+    "text": "Bezeichnungen der nationalen Forschungsprogramme"
+  },
+  {
+    "id": 1109,
+    "code": "POG22",
+    "text": "Geo-politische Benennungen (Staaten)"
+  },
+  {
+    "id": 1110,
+    "code": "POGCH17",
+    "text": "Geo-politische Benennungen (Kantone, Gemeinden)"
+  },
+  {
+    "id": 10382,
+    "code": "POR19",
+    "text": "Terminologie der politischen Rechte"
+  },
+  {
+    "id": 11446,
+    "code": "PRO18v",
+    "text": "Offizielle Berufsbezeichnungen (veraltet/Übergangsrecht)"
+  },
+  {
+    "id": 10416,
+    "code": "RAUM18",
+    "text": "Terminologie der Raumplanung (RPG/ETHZ)"
+  },
+  {
+    "id": 10427,
+    "code": "RETT18",
+    "text": "Terminologie des Rettungswesens"
+  },
+  {
+    "id": 10337,
+    "code": "RMAB24",
+    "text": "Ressourcenmanagement Bund"
+  },
+  {
+    "id": 10334,
+    "code": "SACH18",
+    "text": "Terminologie des Sachenrechts"
+  },
+  {
+    "id": 10426,
+    "code": "SBFIB19",
+    "text": "Berufsbildungsterminologie"
+  },
+  {
+    "id": 10299,
+    "code": "SCHKG24",
+    "text": "Terminologie des Schuldbetreibungs- und Konkursrechts"
+  },
+  {
+    "id": 1245,
+    "code": "SNU23",
+    "text": "Terminologie der Sicherheit von Kernanlagen"
+  },
+  {
+    "id": 11449,
+    "code": "SPIEL19",
+    "text": "Spielbankenterminologie"
+  },
+  {
+    "id": 1257,
+    "code": "SPORT05",
+    "text": "Sportterminologie"
+  },
+  {
+    "id": 10431,
+    "code": "SPORT18",
+    "text": "Sportterminologie"
+  },
+  {
+    "id": 10320,
+    "code": "SSM14",
+    "text": "Terminologie des BASPO"
+  },
+  {
+    "id": 1273,
+    "code": "STE07",
+    "text": "Terminologie des schweizerischen Steuersystems"
+  },
+  {
+    "id": 10396,
+    "code": "STSCH23",
+    "text": "Terminologie des Strahlenschutzes"
+  },
+  {
+    "id": 11473,
+    "code": "SVG20",
+    "text": "Terminologie des Strassenverkehrsrechts"
+  },
+  {
+    "id": 1281,
+    "code": "SVG98",
+    "text": "Terminologie des Strassenverkehrsrechts"
+  },
+  {
+    "id": 10380,
+    "code": "TGR16",
+    "text": "Terminologie der Standeskanzlei Graubünden"
+  },
+  {
+    "id": 10366,
+    "code": "TIT24",
+    "text": "Schweizerische Bundesbehörden: Titel der Amtsträger"
+  },
+  {
+    "id": 11508,
+    "code": "TITCA25",
+    "text": "Schweizerische Kantons- und Gemeindebehörden: Titel der Amtsträger"
+  },
+  {
+    "id": 11464,
+    "code": "TRAME21",
+    "text": "Terminologie der Transplantationsmedizin"
+  },
+  {
+    "id": 10372,
+    "code": "TSS16",
+    "text": "Terminologie des Gesundheitssystems"
+  },
+  {
+    "id": 10311,
+    "code": "UFAG13",
+    "text": "Terminologie der Landwirtschaft"
+  },
+  {
+    "id": 1450,
+    "code": "VBS07",
+    "text": "Militärische Terminologie des VBS"
+  },
+  {
+    "id": 10410,
+    "code": "WAFFE18",
+    "text": "Terminologie des Waffenrechts"
+  },
+  {
+    "id": 11452,
+    "code": "WEA19",
+    "text": "Doktrinrelevante Begriffe der Armee"
+  },
+  {
+    "id": 1598,
+    "code": "WWI17",
+    "text": "Terminologie des Hochwasserschutzes (BAFU)"
+  },
+  {
+    "id": 10327,
+    "code": "ZGB20",
+    "text": "Terminologie des Schweizerischen Zivilgesetzbuchs (punktuelle Einträge)"
+  },
+  {
+    "id": 11476,
+    "code": "ZSBS21",
+    "text": "Terminologie des Bevölkerungsschutzes und des Zivilschutzes"
+  }
+]

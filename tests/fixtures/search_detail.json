@@ -1,0 +1,215 @@
+[
+  {
+    "id": 106213,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/106213?s=EntryId:106213",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "subject": [
+      {
+        "id": 5,
+        "text": "MEDIZIN",
+        "domains": [
+          {
+            "id": 38,
+            "text": "Pathologie"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "text": "BILDUNG",
+        "domains": [
+          {
+            "id": 159,
+            "text": "Behörden / Institutionen / Organisationen / Unternehmen"
+          },
+          {
+            "id": 160,
+            "text": "Grundschule"
+          }
+        ]
+      }
+    ],
+    "languageDetails": [
+      {
+        "id": 350675,
+        "languageIsoCode": "DE",
+        "sequence": 1,
+        "name": "Stiftung Schweizer Zentrum für Heil- und Sonderpädagogik",
+        "nameSource": "SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))",
+        "note": "USG: offiziell; EXP: 2009 gegründet; Trägerin des Schweizer Zentrums für Heil- und Sonderpädagogik (SZH)",
+        "noteSource": "nach SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))",
+        "references": [
+          {
+            "type": "<leer>",
+            "text": "Schweizer Zentrum für Heil- und Sonderpädagogik",
+            "url": "https://www.termdat.bk.admin.ch/search/entry/106213?s=EntryId:106213"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 103499,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/103499?s=EntryId:103499",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "subject": [
+      {
+        "id": 18,
+        "text": "GESELLSCHAFT",
+        "domains": [
+          {
+            "id": 137,
+            "text": "Sozialarbeit / Sozialhilfe"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "text": "BILDUNG",
+        "domains": [
+          {
+            "id": 159,
+            "text": "Behörden / Institutionen / Organisationen / Unternehmen"
+          }
+        ]
+      }
+    ],
+    "languageDetails": [
+      {
+        "id": 341149,
+        "languageIsoCode": "DE",
+        "sequence": 1,
+        "name": "Integras, Fachverband Sozial- und Sonderpädagogik",
+        "nameSource": "Integras, Statuten, 2015-06, Art. 1 ([Internet, 2020-05-14](https://www.integras.ch/de/verband))",
+        "note": "USG: offiziell; HIS: frühere Bezeichnung: Integras, Fachverband Sozial- und Heilpädagogik",
+        "metadata": "Fachverband Sozial- und Heilpädagogik, Sozialpädagogik"
+      },
+      {
+        "id": 341151,
+        "languageIsoCode": "DE",
+        "sequence": 2,
+        "name": "Integras",
+        "nameSource": "Integras, Statuten, 2015-06, Art. 2 ([Internet, 2020-05-14](https://www.integras.ch/de/verband))",
+        "note": "USG: offizielle Kurzform"
+      }
+    ]
+  },
+  {
+    "id": 105623,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/105623?s=EntryId:105623",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "subject": [
+      {
+        "id": 5,
+        "text": "MEDIZIN",
+        "domains": [
+          {
+            "id": 38,
+            "text": "Pathologie"
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "text": "BILDUNG",
+        "domains": [
+          {
+            "id": 159,
+            "text": "Behörden / Institutionen / Organisationen / Unternehmen"
+          },
+          {
+            "id": 160,
+            "text": "Grundschule"
+          }
+        ]
+      }
+    ],
+    "languageDetails": [
+      {
+        "id": 348498,
+        "languageIsoCode": "DE",
+        "sequence": 1,
+        "name": "Schweizer Zentrum für Heil- und Sonderpädagogik",
+        "nameSource": "SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh))",
+        "abbreviation": "SZH",
+        "abbreviationSource": "SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh))",
+        "note": "USG: offiziell; EXP: berät und begleitet die Behörden, die Fachwelt und die interessierte Öffentlichkeit in Fragen zu Bildung, Entwicklung und Integration von Menschen mit Beeinträchtigungen und mit besonderem Bildungsbedarf; HIS: seit 2009; 1972-2009 Schweizerische Zentralstelle für Heilpädagogik (SZH)",
+        "noteSource": "(EXP) nach SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh)); (HIS) nach SZH, Das SZH > Geschichte ([Internet, 2019-08-22](https://www.szh.ch/das-szh/geschichte)) und Dossier Schweizer Organisationen, 1996",
+        "metadata": "Schweizerische Zentralstelle für Heilpädagogik",
+        "references": [
+          {
+            "type": "<leer>",
+            "text": "Stiftung Schweizer Zentrum für Heil- und Sonderpädagogik",
+            "url": "https://www.termdat.bk.admin.ch/search/entry/105623?s=EntryId:105623"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -6,6 +6,26 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Aufgezeichnete Fixtures, eine je externem Endpunkt, mit Nachweis.**
+  `tests/fixtures/` haelt jetzt echte TERMDAT-Antworten fuer alle vier
+  Endpunkte, die dieser Server aufruft — `/Search`, `/Entry`, `/Classification`
+  und `/Collection` —, aufgezeichnet von `scripts/record_fixtures.py`. Herkunft,
+  Datum, Auswahlregel und SHA-256 stehen je Datei in
+  `tests/fixtures/PROVENANCE.md`, wie im uebrigen Portfolio.
+  `tests/test_recorded_fixtures.py` spielt sie durch den echten Client.
+
+  Handgeschriebene Stubs kodieren die Annahme ihres Autors und koennen sie nicht
+  widerlegen: in `i14y-mcp` blieb genau deshalb die ganze Suite gruen, waehrend
+  drei Tools produktiv leere Titel lieferten. Fehlerpfade bleiben
+  handgeschrieben, die lassen sich nicht auf Zuruf aufzeichnen.
+
+  Gegenprobe, jede Zusicherung einzeln neutralisiert: Aufnahmedatum entfernt ->
+  Datums-Check faellt; Fixture ohne PROVENANCE-Eintrag -> Vollstaendigkeits-Check
+  faellt; Aufzeichnung geloescht -> Abdeckungs-Waechter faellt; `languageIsoCode`
+  umbenannt -> der Mapper-Test faellt.
+
 ### Behoben
 
 - **Der 20-Sekunden-Deckel war keine Grenze.** Gedeckelt wurde *vor* dem

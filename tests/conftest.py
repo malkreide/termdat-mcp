@@ -31,4 +31,4 @@ def _no_sleep(request, monkeypatch):
 
     # ``client_module.asyncio`` *ist* das stdlib-Modul, der Patch wirkt also
     # prozessweit — monkeypatch nimmt ihn nach jedem Test zurück.
-    monkeypatch.setattr(client_module.asyncio, "sleep", _instant)
+    monkeypatch.setattr(client_module, "_sleep", _instant)

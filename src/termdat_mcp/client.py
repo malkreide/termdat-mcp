@@ -20,6 +20,12 @@ import httpx
 from . import __version__
 from .logging_config import log
 
+# Eigener Alias, damit Tests die Wartezeit nullen koennen, ohne `asyncio.sleep`
+# prozessweit zu entschaerfen. `monkeypatch.setattr(<modul>.asyncio, "sleep", ...)`
+# sieht lokal aus, ersetzt `sleep` aber auf dem geteilten Modulobjekt — fuer
+# httpx, respx, pytest-asyncio und jeden anderen Importeur im Prozess.
+_sleep = asyncio.sleep
+
 BASE_URL = "https://api.termdat.bk.admin.ch/v2"
 SPEC_URL = "https://api.termdat.bk.admin.ch/swagger/v2/swagger.json"
 VOCAB_TTL_SECONDS = 24 * 60 * 60
@@ -203,7 +209,7 @@ async def fetch_with_retry(
             # has given up by the time it ends. Stop instead.
             if delay >= deadline - time.monotonic():
                 break
-            await asyncio.sleep(delay)
+            await _sleep(delay)
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             break

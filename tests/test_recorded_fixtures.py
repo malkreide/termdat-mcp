@@ -33,10 +33,40 @@ ENDPOINTS = {
     "/Entry": "entry.json",
 }
 
+# `/Search` hat zwei Abfrageformen, nicht eine. `ReturnType` entscheidet, ob die
+# Quelle `languageDetails` mitschickt — also ob ein Treffer eine Benennung traegt
+# oder nicht. Zugeordnet wird deshalb nach dem *Parameter*, nicht nach dem Pfad:
+# nach Pfad bekam eine Summary-Abfrage die Detail-Antwort, und der Unterschied,
+# um den es hier geht, war unsichtbar.
+SUCHFORMEN = {
+    "Detail": "search_detail.json",
+    "Summary": "search_summary.json",
+}
+
 
 def mount(path: str, name: str) -> None:
     """Serviert Fixture `name` unter `path`. Aufgezeichnet wurde durchweg 200."""
     respx.get(f"{BASE_URL}{path}").mock(return_value=httpx.Response(200, json=fixture_json(name)))
+
+
+def mount_suche() -> None:
+    """Serviert `/Search` nach `ReturnType` — Detail und Summary je aus ihrer Aufzeichnung.
+
+    Eine Anfrage mit unbekanntem `ReturnType` faellt laut auf, statt still eine
+    fremde Aufzeichnung zu bekommen.
+    """
+
+    def antwort(request: httpx.Request) -> httpx.Response:
+        art = request.url.params.get("ReturnType")
+        name = SUCHFORMEN.get(art)
+        if name is None:
+            raise AssertionError(
+                f"keine Aufzeichnung fuer ReturnType={art!r} — "
+                "neu aufzeichnen mit `python scripts/record_fixtures.py`."
+            )
+        return httpx.Response(200, json=fixture_json(name))
+
+    respx.get(f"{BASE_URL}/Search").mock(side_effect=antwort)
 
 
 # --------------------------------------------------------------------------
@@ -106,7 +136,7 @@ async def test_collection_wird_aus_der_aufzeichnung_gelesen():
 async def test_search_bildet_die_aufgezeichneten_treffer_ab():
     hits = fixture_json("search_detail.json")
     mount("/Classification", "classification_de.json")
-    mount("/Search", "search_detail.json")
+    mount_suche()
     client = TermdatClient()
     try:
         entries, _ = await client.search("Sonderpädagogik", detail=True)
@@ -116,6 +146,49 @@ async def test_search_bildet_die_aufgezeichneten_treffer_ab():
     assert all(e["entry_id"] for e in entries), "jeder Treffer traegt eine ID"
     assert all(e["url"] for e in entries), "jeder Treffer traegt eine URL"
     assert any(e["variants"] for e in entries), "Sprachvarianten stehen in `languageDetails`"
+
+
+@respx.mock
+async def test_eine_summary_suche_liefert_treffer_ohne_jede_benennung():
+    """`detail=False` streicht genau das, wofuer dieses Werkzeug da ist.
+
+    Die Quelle schickt bei `ReturnType=Summary` kein `languageDetails`, und
+    `flatten_entry` macht daraus `variants: []`. Die Treffer behalten ID, URL,
+    Status und Klassifikation — aber keine einzige Benennung. Fuer einen
+    Terminologie-Server ist das ein Eintrag ohne Begriff.
+
+    Diese Zusicherung haelt den Stand fest, nicht ein Wunschverhalten: solange
+    `detail` als Parameter am Werkzeug haengt, soll wenigstens belegt sein, was
+    er anrichtet. Sie faellt, wenn die Quelle anfaengt, auch im Summary
+    Benennungen zu liefern — dann gehoert der Warnsatz im Docstring gestrichen.
+    """
+    mount("/Classification", "classification_de.json")
+    mount_suche()
+    client = TermdatClient()
+    try:
+        entries, _ = await client.search("Sonderpädagogik", detail=False)
+    finally:
+        await client.aclose()
+    assert entries, "die Summary-Suche liefert ueberhaupt Treffer"
+    assert all(e["entry_id"] for e in entries), "jeder Treffer traegt eine ID"
+    assert not any(e["variants"] for e in entries), (
+        "Summary liefert jetzt doch Benennungen — der Warnsatz im Docstring von "
+        "`termdat_search` ist damit falsch und gehoert gestrichen"
+    )
+
+
+def test_die_beiden_suchformen_sind_wirklich_verschieden():
+    """Sonst belegte die zweite Aufzeichnung nichts.
+
+    Waeren Detail und Summary gleich, waere die Trennung im Dispatcher Zierde
+    und der Warnsatz im Docstring erfunden. Der Unterschied liegt in genau einem
+    Feld, und das ist das, aus dem die Benennungen kommen.
+    """
+    detail = fixture_json("search_detail.json")
+    summary = fixture_json("search_summary.json")
+    assert detail and summary, "beide Aufzeichnungen tragen Treffer"
+    assert "languageDetails" in detail[0], "Detail fuehrt `languageDetails` nicht mehr"
+    assert "languageDetails" not in summary[0], "Summary fuehrt jetzt `languageDetails`"
 
 
 @respx.mock

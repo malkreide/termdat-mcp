@@ -117,6 +117,22 @@ def main() -> int:
         print("!! Suche lieferte keine Treffer — Begriff pruefen")
         return 1
 
+    # Dieselbe Suche mit ReturnType=Summary. Das ist eine eigene Abfrageform und
+    # keine Spielart: die Quelle liefert dabei kein `languageDetails`, und
+    # `flatten_entry` macht daraus Eintraege mit leerem `variants` — Treffer ohne
+    # jede Benennung. Ohne diese Aufzeichnung bekam eine Summary-Abfrage im Test
+    # die Detail-Antwort, und der Unterschied war unsichtbar.
+    summary_params = [(k, v) for k, v in params if k != "ReturnType"]
+    summary_params.append(("ReturnType", "Summary"))
+    raw, summary_hits, url = get("/Search", summary_params)
+    write(
+        "search_summary.json",
+        raw,
+        url,
+        f"«{SEARCH_TERM}», ReturnType=Summary, {len(summary_hits)} von hoechstens "
+        f"{MAX_ENTRIES}; sonst gleiche Parameter wie search_detail",
+    )
+
     # --- Einzeleintrag, ID aus der Suche oben ----------------------------
     entry_id = hits[0]["id"]
     raw, _, url = get("/Entry", [("EntryIds", entry_id), ("InLanguageCode", "DE")])

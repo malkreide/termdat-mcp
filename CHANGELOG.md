@@ -6,6 +6,37 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Behoben
+
+- **`detail=False` liefert Treffer ohne jede Benennung — und sagte es nicht.**
+  Der Parameter hängt am Werkzeug `termdat_search`, war im Docstring aber mit
+  keinem Wort erklärt. Er setzt `ReturnType=Summary`; die Quelle lässt dann
+  `languageDetails` weg, und `flatten_entry` macht daraus `variants: []`. Die
+  Treffer behalten ID, URL, Status und Klassifikation — aber keine einzige
+  Benennung. Für einen Terminologie-Server ist das ein Eintrag ohne Begriff,
+  und ein Modell, das den Parameter zum Token-Sparen setzt, bekommt Treffer, aus
+  denen es nichts lesen kann.
+
+  Der Docstring sagt es jetzt, mitsamt dem, wofür der Modus taugt (zählen,
+  nach Klassifikation filtern) und wofür nicht.
+
+- **Der Fixture-Dispatcher ordnete nach Pfad zu.** `/Search` bekam immer
+  `search_detail.json` — auch für eine Summary-Abfrage. Der Unterschied, um den
+  es hier geht, war damit im Test unsichtbar: eine Abfrageform ohne
+  Aufzeichnung sah aus wie eine mit. Zugeordnet wird jetzt nach `ReturnType`,
+  und ein unbekannter Wert fällt laut auf, statt still eine fremde Aufzeichnung
+  zu bekommen.
+
+### Hinzugefügt
+
+- **`search_summary.json`** — die zweite Abfrageform von `/Search`, echt
+  aufgezeichnet. `test_die_beiden_suchformen_sind_wirklich_verschieden` hält
+  fest, dass sie sich in genau dem Feld unterscheiden, aus dem die Benennungen
+  kommen; ohne diesen Nachweis belegte die zweite Datei nichts.
+  `test_eine_summary_suche_liefert_treffer_ohne_jede_benennung` hält den Stand
+  fest und fällt, wenn die Quelle im Summary doch Benennungen liefert — dann
+  gehört der Warnsatz im Docstring gestrichen.
+
 ### Changed
 
 - **Der Backoff-Schlaf wird ueber einen Modul-Alias gepatcht, nicht ueber

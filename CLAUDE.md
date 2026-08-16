@@ -74,6 +74,12 @@ ruff format --check src/ tests/ scripts/
 python scripts/check_version_sync.py
 ```
 
+Vier Felder statt der üblichen drei — `3.10` ist das unterste und im Portfolio
+selten (nur `lindas-mcp` fährt es auch). Alle vier Gates laufen auf allen vier
+Feldern in einem Job, keine `if:`-Ausnahme. Ein `fail-fast: false` steht
+**nicht** da: Eine rote 3.10 bricht 3.11–3.13 ab, bevor sie etwas sagen — und
+3.10 ist genau das Feld, das am ehesten allein fällt.
+
 **Live-Tests: geplanter Workflow vorhanden.** `.github/workflows/live.yml`,
 `cron: "17 5 * * 1"` plus `workflow_dispatch`. Die Live-Suite ist also nicht bloss
 per `-m "not live"` ausgeschlossen — DRIFT-005 ist hier erfüllt. `schedule`

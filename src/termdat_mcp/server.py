@@ -108,6 +108,13 @@ async def search_terms(
     parts — «Quellensteuer» does not match «Quellensteuerverordnung», but
     «Quellensteuer*» does. Reach for a wildcard before concluding a term is absent.
 
+    **Leave `detail` at True unless you want a bare hit list.** With `detail=False`
+    the API omits `languageDetails`, and every entry comes back with an empty
+    `variants` — id, url, status and classification, but not a single designation.
+    That is a hit you cannot read a term from, from a tool whose purpose is terms.
+    Use it to count or to filter by classification, never to answer «what is this
+    called».
+
     `out_language` adds a target language to every entry's variants — it is purely
     additive and never filters the result set. `fields` is a comma-separated subset
     of: Terminus, Name, Abbreviation, Phraseology, Definition, Note, Context, Source,

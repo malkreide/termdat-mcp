@@ -1,0 +1,137 @@
+[
+  {
+    "id": 106213,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/106213?s=EntryId:106213",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "hits": [
+      {
+        "name": "Stiftung Schweizer Zentrum für Heil- und Sonderpädagogik"
+      },
+      {
+        "note": "USG: offiziell; EXP: 2009 gegründet; Trägerin des Schweizer Zentrums für Heil- und Sonderpädagogik (SZH)"
+      },
+      {
+        "notesource": "nach SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))"
+      },
+      {
+        "namesource": "SZH, Das SZH > Stiftung ([Internet, 2019-08-22](https://www.szh.ch/das-szh/stiftung))"
+      }
+    ]
+  },
+  {
+    "id": 103499,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/103499?s=EntryId:103499",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "hits": [
+      {
+        "name": "Integras, Fachverband Sozial- und Sonderpädagogik"
+      },
+      {
+        "name": "Integras"
+      },
+      {
+        "note": "USG: offiziell; HIS: frühere Bezeichnung: Integras, Fachverband Sozial- und Heilpädagogik"
+      },
+      {
+        "note": "USG: offizielle Kurzform"
+      },
+      {
+        "namesource": "Integras, Statuten, 2015-06, Art. 1 ([Internet, 2020-05-14](https://www.integras.ch/de/verband))"
+      },
+      {
+        "namesource": "Integras, Statuten, 2015-06, Art. 2 ([Internet, 2020-05-14](https://www.integras.ch/de/verband))"
+      }
+    ]
+  },
+  {
+    "id": 105623,
+    "url": "https://www.termdat.bk.admin.ch/search/entry/105623?s=EntryId:105623",
+    "status": {
+      "code": "1",
+      "text": "Validiert"
+    },
+    "reliability": {
+      "code": "2",
+      "text": "Sprachlich/formal überprüft"
+    },
+    "office": {
+      "id": 1,
+      "code": "ACH",
+      "text": "Schweizerische Bundesverwaltung"
+    },
+    "collection": {
+      "id": 11451,
+      "code": "ORGCH19",
+      "text": "Bezeichnungen schweizerischer Organisationen und Institutionen"
+    },
+    "classification": {
+      "id": 16,
+      "code": "VARI",
+      "text": "VARIA"
+    },
+    "hits": [
+      {
+        "name": "Schweizer Zentrum für Heil- und Sonderpädagogik"
+      },
+      {
+        "abbreviation": "SZH"
+      },
+      {
+        "note": "USG: offiziell; EXP: berät und begleitet die Behörden, die Fachwelt und die interessierte Öffentlichkeit in Fragen zu Bildung, Entwicklung und Integration von Menschen mit Beeinträchtigungen und mit besonderem Bildungsbedarf; HIS: seit 2009; 1972-2009 Schweizerische Zentralstelle für Heilpädagogik (SZH)"
+      },
+      {
+        "abbreviationsource": "SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh))"
+      },
+      {
+        "notesource": "(EXP) nach SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh)); (HIS) nach SZH, Das SZH > Geschichte ([Internet, 2019-08-22](https://www.szh.ch/das-szh/geschichte)) und Dossier Schweizer Organisationen, 1996"
+      },
+      {
+        "namesource": "SZH, Das SZH ([Internet, 2019-08-22](https://www.szh.ch/das-szh))"
+      }
+    ]
+  }
+]

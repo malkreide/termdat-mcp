@@ -8,6 +8,14 @@ versioning follows [SemVer](https://semver.org/).
 
 ### Behoben
 
+- **Die Pruefsummen im Fixture-Nachweis waren Zierde.** `PROVENANCE.md` fuehrt
+  je Datei einen SHA-256 — um genau einen Fall zu fangen: eine Aufzeichnung,
+  die nach dem Lauf von Hand nachgebessert wurde. Eine korrigierte Antwort ist
+  wieder eine erfundene, und von aussen ist ihr das nicht anzusehen.
+  Nachgerechnet hat sie kein Test. `test_die_pruefsumme_im_nachweis_stimmt`
+  tut es jetzt, ueber die Bytes auf der Platte statt ueber den Loader — genau
+  die hat der Recorder gehasht.
+
 - **`detail=False` liefert Treffer ohne jede Benennung — und sagte es nicht.**
   Der Parameter hängt am Werkzeug `termdat_search`, war im Docstring aber mit
   keinem Wort erklärt. Er setzt `ReturnType=Summary`; die Quelle lässt dann

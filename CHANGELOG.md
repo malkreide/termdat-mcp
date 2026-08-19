@@ -8,6 +8,19 @@ versioning follows [SemVer](https://semver.org/).
 
 ### Behoben
 
+- **Die Dokumentation nannte ein schmaleres Lint-Gate als die CI faehrt.**
+  `README.md`, `README.de.md`, `CONTRIBUTING.md` und `CONTRIBUTING.de.md`
+  empfahlen `ruff check src tests`. Die CI faehrt fuenf Gates, darunter
+  `scripts/` im Lint-Pfad, `ruff format --check` und die beiden Pruefskripte.
+  Wer der Dokumentation folgte, bekam gruen und danach eine rote CI, deren
+  Ursache nicht im Diff stand. Alle vier Stellen nennen jetzt die Gates
+  woertlich aus `ci.yml`.
+
+- **Die READMEs nannten einen `mcp`-Pin, den es nicht mehr gibt.** Dort stand
+  `>=1.2.0`; `pyproject.toml` fordert seit dem 2.x-Bruch `>=2.0.0,<3`. Genau
+  diese Untergrenze ist der Grund, warum ein frischer Install ueberhaupt
+  laeuft — als `>=1.2.0` gelesen wirkt sie wie eine unverbindliche Notiz.
+
 - **Die Pruefsummen im Fixture-Nachweis waren Zierde.** `PROVENANCE.md` fuehrt
   je Datei einen SHA-256 — um genau einen Fall zu fangen: eine Aufzeichnung,
   die nach dem Lauf von Hand nachgebessert wurde. Eine korrigierte Antwort ist

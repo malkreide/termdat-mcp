@@ -271,7 +271,7 @@ Kontrollen erfordern, bevor ein schreibfähiges Tool hinzukommt.
 
 Die Protokollversion wird beim `initialize`-Handshake vom
 [`mcp`](https://pypi.org/project/mcp/)-Python-SDK ausgehandelt (in
-`pyproject.toml` auf `>=1.2.0` gepinnt). Das SDK wird über monatliche
+`pyproject.toml` auf `>=2.0.0,<3` gepinnt). Das SDK wird über monatliche
 Dependabot-PRs aktuell gehalten (`.github/dependabot.yml`);
 protokollrelevante Bumps werden in [`CHANGELOG.md`](CHANGELOG.md) vermerkt.
 
@@ -280,7 +280,10 @@ protokollrelevante Bumps werden in [`CHANGELOG.md`](CHANGELOG.md) vermerkt.
 ```bash
 PYTHONPATH=src pytest tests/ -m "not live"   # offline, respx-gemockt
 PYTHONPATH=src pytest tests/ -m live         # gegen die echte API
-PYTHONPATH=src ruff check src tests
+python scripts/check_ruff_pin.py
+ruff check src/ tests/ scripts/
+ruff format --check src/ tests/ scripts/
+python scripts/check_version_sync.py
 ```
 
 ## Changelog

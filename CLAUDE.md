@@ -59,7 +59,6 @@ Ein Codex-Review auf einem PR wird beantwortet oder behoben, nie ignoriert.
 
 ## Teil 2 — Dieses Repo
 
-
 **ruff: eine Quelle.** `pyproject.toml`, `dev`-Extra, `ruff==0.16.1`. Die CI
 hat keinen eigenen Pin-Schritt — der Install über `ci.yml` genügt, lokal wie
 dort. Eine `.pre-commit-config.yaml` gibt es nicht; wenn eine dazukommt, muss

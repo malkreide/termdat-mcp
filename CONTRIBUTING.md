@@ -21,7 +21,10 @@ pip install -e ".[dev]"
 
 PYTHONPATH=src pytest tests/ -m "not live"   # offline, respx-mocked
 PYTHONPATH=src pytest tests/ -m live         # hits the real API
-ruff check src tests
+python scripts/check_ruff_pin.py
+ruff check src/ tests/ scripts/
+ruff format --check src/ tests/ scripts/
+python scripts/check_version_sync.py
 ```
 
 ## Pull requests

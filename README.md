@@ -267,7 +267,7 @@ controls before any write-capable tool is added.
 ## MCP Protocol Version
 
 The protocol version is negotiated at the `initialize` handshake by the
-[`mcp`](https://pypi.org/project/mcp/) Python SDK (pinned to `>=1.2.0` in
+[`mcp`](https://pypi.org/project/mcp/) Python SDK (pinned to `>=2.0.0,<3` in
 `pyproject.toml`). The SDK is kept current via monthly Dependabot PRs
 (`.github/dependabot.yml`); protocol-relevant bumps are noted in
 [`CHANGELOG.md`](CHANGELOG.md).
@@ -277,7 +277,10 @@ The protocol version is negotiated at the `initialize` handshake by the
 ```bash
 PYTHONPATH=src pytest tests/ -m "not live"   # offline, respx-mocked
 PYTHONPATH=src pytest tests/ -m live         # hits the real API
-PYTHONPATH=src ruff check src tests
+python scripts/check_ruff_pin.py
+ruff check src/ tests/ scripts/
+ruff format --check src/ tests/ scripts/
+python scripts/check_version_sync.py
 ```
 
 ## Changelog

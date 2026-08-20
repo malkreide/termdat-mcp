@@ -50,6 +50,28 @@ versioning follows [SemVer](https://semver.org/).
 
 ### Hinzugefügt
 
+- **SessionStart-Hook, der einen veralteten Klon meldet.**
+  `.claude/hooks/session-start-stale-clone.sh` sagt beim Sessionstart, wie
+  viele Commits der ausgecheckte Stand hinter `origin/<default-branch>` liegt;
+  bei 0 schweigt er. Ein veralteter Klon hat am 3.8.2026 zweimal eine rote CI
+  erzeugt, deren Ursache nicht im Diff stand — es fehlten jeweils genau die
+  Commits, die das Gate einführten, an dem der Branch scheiterte. Der
+  Default-Branch wird über `git ls-remote --symref` ermittelt, nicht als `main`
+  angenommen: drei Server im Portfolio heissen ihn `master`.
+
+  Wichtiger als die Meldung ist, dass der Hook die Session **niemals**
+  blockiert — ein Hook, der bei Netzproblemen die Arbeit anhält, wird nach dem
+  zweiten Mal abgeschaltet und schützt danach gar nichts. Kein Netz, kein
+  Remote, detached HEAD, kein Git-Repo: alles endet still mit `exit 0`, jede
+  Netzoperation unter einer Zeitgrenze von 5 Sekunden.
+  `tests/test_session_start_hook.py` fährt das Skript gegen echte
+  Wegwerf-Repos und weist die Zeitgrenze an einem künstlich hängenden `git`
+  nach — beide Zweige, mit `timeout`-Binary und ohne. Die Gegenprobe über
+  diesen Zweig fand einen echten Fehler: ohne Job-Control landete der
+  Hintergrundjob in der Prozessgruppe des Hooks, der Kill traf nur `git`
+  selbst, und ein Enkelprozess hielt die stdout-Pipe die vollen 30 Sekunden
+  offen.
+
 - **`search_summary.json`** — die zweite Abfrageform von `/Search`, echt
   aufgezeichnet. `test_die_beiden_suchformen_sind_wirklich_verschieden` hält
   fest, dass sie sich in genau dem Feld unterscheiden, aus dem die Benennungen

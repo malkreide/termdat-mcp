@@ -72,12 +72,26 @@ def build_transport_security(cfg=None):
     )
 
 
-def _run_sse() -> None:
-    """Run the SSE transport with explicit CORS for the MCP session header (SDK-004)."""
-    import uvicorn
+# Die Header, nach denen Spec 2026-07-28 eine Anfrage routet — in der
+# Schreibweise des SDK (`mcp.shared.inbound`). Ein Browser darf einen nicht
+# safelisteten Header gar nicht erst senden, wenn der Server ihn nicht in
+# `Access-Control-Allow-Headers` nennt: ohne sie stirbt jede Cross-Origin-
+# Anfrage am Preflight, vor dem ersten MCP-Byte. stdio- und Python-Clients
+# kennen keinen Preflight und merken davon nichts — deshalb fiel es nicht auf.
+CORS_ROUTING_HEADERS = ["Mcp-Method", "Mcp-Name", "Mcp-Protocol-Version"]
+
+
+def build_http_app():
+    """Baue die SSE-App samt CORS, ohne einen Socket zu binden.
+
+    Herausgezogen aus `_run_sse`, damit die CORS-Schicht pruefbar ist: solange
+    Aufbau und `uvicorn.run` in derselben Funktion standen, liess sich die
+    Freigabeliste nur lesen, nicht ausprobieren — und eine gelesene Liste kann
+    vollstaendig aussehen und trotzdem nie an der Middleware ankommen. Dieselbe
+    Trennung fahren die Schwester-Server im Portfolio.
+    """
     from starlette.middleware.cors import CORSMiddleware
 
-    _warn_on_public_binding(settings.host)
     security = build_transport_security()
     if security is None:
         log.warning(
@@ -89,15 +103,23 @@ def _run_sse() -> None:
     # mcp 2.x: transport_security is a per-app kwarg, not a mutable setting.
     app = mcp.sse_app(transport_security=security, host=settings.host)
     # Default-deny CORS: no browser origin is allowed unless TERMDAT_MCP_CORS_ORIGINS
-    # lists it explicitly (never a wildcard in production). The MCP session header is
-    # exposed and accepted so browser clients can round-trip it.
+    # lists it explicitly (never a wildcard in production).
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_allow_origins,
         allow_methods=["GET", "POST"],
-        allow_headers=["Mcp-Session-Id", "Content-Type"],
+        allow_headers=["Mcp-Session-Id", "Content-Type", *CORS_ROUTING_HEADERS],
         expose_headers=["Mcp-Session-Id"],
     )
+    return app
+
+
+def _run_sse() -> None:
+    """Run the SSE transport with explicit CORS for the routing headers (SDK-004)."""
+    import uvicorn
+
+    _warn_on_public_binding(settings.host)
+    app = build_http_app()
     uvicorn.run(app, host=settings.host, port=settings.port, log_level=settings.log_level.lower())
 
 

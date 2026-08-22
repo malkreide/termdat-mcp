@@ -8,6 +8,27 @@ versioning follows [SemVer](https://semver.org/).
 
 ### Behoben
 
+- **Browser-Clients scheiterten am Preflight.** Spec `2026-07-28` routet eine
+  Anfrage über `Mcp-Method`, `Mcp-Name` und `Mcp-Protocol-Version`; die
+  CORS-Freigabeliste nannte keinen davon, dafür mit `Mcp-Session-Id` den Header
+  genau der Session-Mechanik, die dieselbe Revision abgeschafft hat. Ein
+  Browser darf einen nicht safelisteten Header nicht senden, wenn der Server
+  ihn nicht nennt: die Anfrage starb vor dem ersten MCP-Byte, während stdio und
+  Python, für die kein Preflight gilt, weiterliefen. Deshalb war nichts rot.
+
+### Hinzugefügt
+
+- **`build_http_app()`**, herausgezogen aus `_run_sse`. Solange Aufbau und
+  `uvicorn.run` in derselben Funktion standen, liess sich die CORS-Schicht nur
+  lesen, nicht ausprobieren — und eine gelesene Freigabeliste kann vollständig
+  aussehen und trotzdem nie an der Middleware ankommen. `_run_sse` ruft die
+  neue Funktion auf; am Verhalten ändert sich nichts.
+
+- **Frischehinweise auf `tools/list` und `server/discover`** (SEP-2549, Spec
+  `2026-07-28`): `ttlMs` 300000, `cacheScope` `public`. Das SDK setzt sonst
+  «sofort veraltet, nie geteilt» und lässt damit jeden Client bei jeder
+  Verbindung neu auflisten — für eine Liste, die beim Import feststeht.
+
 - **Die Dokumentation nannte ein schmaleres Lint-Gate als die CI faehrt.**
   `README.md`, `README.de.md`, `CONTRIBUTING.md` und `CONTRIBUTING.de.md`
   empfahlen `ruff check src tests`. Die CI faehrt fuenf Gates, darunter

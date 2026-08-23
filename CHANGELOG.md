@@ -10,11 +10,11 @@ versioning follows [SemVer](https://semver.org/).
 
 - **Browser-Clients scheiterten am Preflight.** Spec `2026-07-28` routet eine
   Anfrage über `Mcp-Method`, `Mcp-Name` und `Mcp-Protocol-Version`; die
-  CORS-Freigabeliste nannte keinen davon, dafür mit `Mcp-Session-Id` den Header
-  genau der Session-Mechanik, die dieselbe Revision abgeschafft hat. Ein
-  Browser darf einen nicht safelisteten Header nicht senden, wenn der Server
-  ihn nicht nennt: die Anfrage starb vor dem ersten MCP-Byte, während stdio und
-  Python, für die kein Preflight gilt, weiterliefen. Deshalb war nichts rot.
+  CORS-Freigabeliste nannte keinen davon, dafür mit `Mcp-Session-Id` den
+  Session-Header, der für sich genommen keine Anfrage routet. Ein Browser darf
+  einen nicht safelisteten Header nicht senden, wenn der Server ihn nicht
+  nennt: die Anfrage starb vor dem ersten MCP-Byte, während stdio und Python,
+  für die kein Preflight gilt, weiterliefen. Deshalb war nichts rot.
 
 ### Hinzugefügt
 
@@ -85,6 +85,23 @@ versioning follows [SemVer](https://semver.org/).
   Beide READMEs beschreiben die Aeren; ein Test haelt jede Sprache einzeln
   dagegen — im Portfolio sind EN und DE desselben Repos schon dreimal
   auseinandergelaufen, weil nur eine Fassung nachgezogen wurde.
+
+- **`Mcp-Session-Id` ist weiterhin freigegeben — und das steht jetzt in einem
+  Test statt in einem Satz.** Der Docstring von `tests/test_cors.py` nannte den
+  Header die Spur einer Mechanik, die `2026-07-28` abgeschafft habe. Das stimmt
+  nicht: `mcp` 2.x bedient beide Protokoll-Aeren, die Session gehoert zur
+  Handshake-Aera, und der Server gibt den Header nicht ohne Grund auch in
+  `expose_headers` frei.
+
+  Nachgemessen statt aus Spec-Text geschlossen: `MCP_SESSION_ID_HEADER` steht
+  unveraendert in `mcp/server/streamable_http.py`, und ein echter `initialize`
+  durch den zusammengebauten ASGI-Stack bekommt eine Session-ID im
+  Antwort-Header zurueck.
+
+  `test_der_session_header_ist_weiterhin_freigegeben` haelt beides fest. Die
+  Gegenprobe zeigt, dass es die Luecke wirklich gab: nimmt man den Header aus
+  der Freigabeliste, faellt genau dieser eine Test, und die sieben bestehenden
+  bleiben gruen.
 
 ### Hinzugefügt
 

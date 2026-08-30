@@ -106,8 +106,10 @@ _EMPTY_HINT = (
     "No entry matched. `search_term` is Lucene syntax: try a prefix wildcard "
     "(e.g. 'Quellensteuer*') to catch compounds, or the fuzzy operator ('~'). "
     "Widen `fields` to all of: " + ", ".join(SEARCH_FIELDS) + ". "
-    "Only then conclude that the term is absent from TERMDAT — and do not "
-    "substitute a guess for the official designation."
+    "Only then conclude that the term is absent from the public API — which "
+    "serves a deliberate subset of TERMDAT, so absence here is not absence from "
+    "TERMDAT; www.termdat.ch may still hold the entry. And do not substitute a "
+    "guess for the official designation."
 )
 
 
@@ -153,10 +155,13 @@ async def search_terms(
     absent. Establish that with a wildcard retry, not from a single empty result, and
     never fill the gap with a guessed designation.
 
-    Coverage caveat: the public API serves a subset of what termdat.bk.admin.ch shows.
-    Entries the website lists can be missing from the API entirely — not hidden by a
-    filter, simply not served. So «not found here» means «not in the API», never «not
-    in TERMDAT»: say which one you mean, and point at the website for the difference.
+    Coverage caveat: the public API serves a subset of what termdat.bk.admin.ch shows,
+    and the Federal Chancellery confirmed on 2026-08-21 that this is deliberate — the
+    selection follows the needs of the federal administration's translators, and no
+    fuller coverage is planned. Entries the website lists can be missing from the API
+    entirely: not hidden by a filter, simply not served, so no query reaches them. So
+    «not found here» means «not in the API», never «not in TERMDAT»: say which one you
+    mean, and point at www.termdat.ch for the difference.
     """
     entries, retrieved_at = await _client.search(
         search_term,

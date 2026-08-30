@@ -279,9 +279,11 @@ Vermutung über die Reihenfolge.
 Praktisch heisst das: **Eine verschwundene Limit-Meldung ist keine Entwarnung.**
 Sie kann bedeuten, dass das Kontingent wieder da ist — und dass jetzt etwas
 anderes den Review verhindert. Belegt ist eine Prüfung erst durch ein
-Review-Objekt **oder** eine Befundlos-Meldung. Wer nur das Objekt gelten lässt,
-zählt jeden befundlosen Review als ungeprüft — und baut sich denselben Fehlalarm
-ein, den dieser Abschnitt verhindern soll, nur in die andere Richtung.
+Review-Objekt **oder** eine Befundlos-Meldung — dazu, seit dem 30.8., der
+Statuskasten weiter unten, der aber nur den Lauf bezeugt und nicht das Urteil.
+Wer nur das Objekt gelten lässt, zählt jeden befundlosen Review als ungeprüft
+— und baut sich denselben Fehlalarm ein, den dieser Abschnitt verhindern soll,
+nur in die andere Richtung.
 
 «Kein Kommentar» heisst also nicht «geprüft und sauber». Unterscheiden lässt es
 sich an der Form: Ein Review **mit** Befund ist ein Review-Objekt
@@ -296,12 +298,39 @@ alles andere; wer nur eine nimmt, übersieht den Rest. Genau so ist die
 Limit-Meldung zuerst durchgerutscht.
 
 Der Kommentarzähler allein reicht ohnehin nicht: `comments: 1` kann die
-Befundlos-, die Kontingent- **oder** die Environment-Meldung sein — drei
-gegensätzliche Bedeutungen unter derselben Zahl. Den Text lesen, nicht die Zahl.
-Und einen unbekannten vierten Text wörtlich zitieren, statt ihn in eine der
-bekannten Schubladen zu zwingen: Dieser Abschnitt musste schon einmal von drei
-auf vier Gründe wachsen, und die 👍-Reaktion stand hier zwei Fassungen lang als
-Tatsache.
+Befundlos-, die Kontingent-, die Environment-Meldung **oder** der Statuskasten
+unten sein — vier gegensätzliche Bedeutungen unter derselben Zahl. Den Text
+lesen, nicht die Zahl. Und einen unbekannten weiteren Text wörtlich zitieren,
+statt ihn in eine der bekannten Schubladen zu zwingen: Dieser Abschnitt musste
+schon einmal von drei auf vier Gründe wachsen und eben von vier auf fünf
+Formen, und die 👍-Reaktion stand hier zwei Fassungen lang als Tatsache.
+
+**Fünfte Form, und die erste, die sich ändert: der Statuskasten.** Am 30.8.
+stand unter `termdat-mcp` PR #64 genau ein Kommentar des Bots, und er war
+keiner der vier oben:
+
+```
+## Codex Review Summary
+
+| Review | Status | Commit | Review trigger |
+| --- | --- | --- | --- |
+| 📝 **Code Review** | ✅ **Completed** 2026-08-30T18:14:55Z | `95b76f0` | Draft marked ready |
+```
+
+Zwei Dinge daran sind neu. Erstens bezeugt der Kasten einen **Lauf**, kein
+Urteil: `get_reviews` blieb `[]`, die Befundlos-Meldung kam nicht, die
+👍-Reaktion auch nicht (`reactions.total_count` 0, am PR wie am Kommentar).
+«Completed» trennt damit nicht zwischen «nichts gefunden» und «etwas gefunden,
+nichts geschrieben». Wer den Kasten als Freigabe liest, hat wieder das Häkchen
+statt der Prüfung — und diesmal eines, das der Bot selbst setzt.
+
+Zweitens ist er **derselbe Kommentar zu verschiedenen Zeiten**: angelegt um
+18:12:58 UTC mit `🔄 Running since 18:12:54`, editiert um 18:14:59 auf
+`✅ Completed`. Ein einmaliges `get_comments` liest je nach Zeitpunkt zwei
+entgegengesetzte Bedeutungen aus derselben, unveränderten Kommentar-ID;
+`created_at` gehört zum ersten Zustand, `updated_at` zum letzten. Die vier
+Formen oben stehen fest, sobald sie da sind — diese nicht. Wer früh liest und
+das Ergebnis als Befund notiert, schreibt einen Zwischenstand fort.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -323,6 +352,15 @@ mergen. Am 21./22.8. lagen zwischen «ready for review» und Merge mehrfach drei
 bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst und
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
+
+Den Lauf bricht der Merge deshalb aber nicht ab. In #64 lag der Merge um
+18:12:49, der Review lief weiter und schloss um 18:14:55 auf genau dem
+gemergten Head `95b76f0` ab. Verloren ist also nicht die Prüfung, sondern die
+Gelegenheit, auf einen Befund zu reagieren, bevor er in `main` steht — der
+Unterschied zählt, weil «nicht geprüft» eine Nacharbeit verlangt und «zu spät
+geprüft» ein Nachlesen. Ein Fall, kein Gesetz: Ob ein Merge einen Review auch
+dann überleben lässt, wenn er zwei Minuten früher fällt, ist damit nicht
+gemessen.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne

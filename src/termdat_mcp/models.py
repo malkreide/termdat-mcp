@@ -6,11 +6,18 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+# Terms of use as stated by the rightsholder. The I14Y catalogue record carries
+# `license: null`, which is why this server used to tell the model that the terms
+# were unknown. They are not: asked directly, the Terminology Section of the Federal
+# Chancellery answered on 2026-08-21 (see docs/bk-auskunft-2026-08-21.md). Naming the
+# condition is what lets a downstream user meet it; "clarify this yourself" did not.
 ATTRIBUTION = (
     "Data: TERMDAT, terminology database of the Swiss Federal Administration, "
     "Swiss Federal Chancellery (BK), via api.termdat.bk.admin.ch. "
-    "The I14Y catalogue record carries no explicit licence statement — "
-    "clarify terms with the Federal Chancellery before republishing."
+    "Terms of use (Terminology Section, Federal Chancellery, 2026-08-21): reuse and "
+    "republication are permitted only if the source www.termdat.ch is named, and the "
+    "Terminology Section must be informed of the purpose and manner beforehand "
+    "(terminologie@bk.admin.ch)."
 )
 
 Provenance = Literal["live_api", "cached"]
@@ -108,7 +115,10 @@ class CheckResult(Envelope):
         default=(
             "TERMDAT covers federal and cantonal administrative nomenclature — authority names, "
             "official titles of legal acts, abbreviations. Domain vocabulary (e.g. pedagogy) is "
-            "largely absent, so 'not_found' means 'not in TERMDAT', not 'incorrect'."
+            "largely absent. And the public API deliberately serves only a subset of TERMDAT, "
+            "selected for the needs of the federal administration's translators (Federal "
+            "Chancellery, 2026-08-21), so 'not_found' means 'not in the public API' — never "
+            "'not in TERMDAT' and never 'incorrect'. Check www.termdat.ch for the difference."
         )
     )
 

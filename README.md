@@ -192,7 +192,7 @@ termdat-mcp/
 - **No credentials handled.** The API is unauthenticated; the server stores and forwards no secrets.
 - **No silent empties.** `api_status` and error paths surface failures instead of returning an empty result that looks complete.
 - **Truncation is explicit.** `MaxEntryCount` is always sent and `truncated` is reported (see Known Limitations).
-- **Licence caution.** TERMDAT content carries no licence statement; every response repeats this in `source`. Clarify terms with the Federal Chancellery before republishing downstream.
+- **Terms of use are stated, not guessed.** Every response repeats them in `source`: reuse and republication require the source `www.termdat.ch` to be named, and the Federal Chancellery's Terminology Section to be informed of purpose and manner beforehand ([statement of 2026-08-21](docs/bk-auskunft-2026-08-21.md)).
 - **Egress allow-list.** Requests can only reach `api.termdat.bk.admin.ch` (HTTPS), enforced before every call by a frozen `ALLOWED_HOSTS` set — no user input can redirect egress. See [`docs/network-egress.md`](docs/network-egress.md).
 - **Loopback by default.** SSE binds to `127.0.0.1`; `0.0.0.0` is an explicit container opt-in that warns on stderr. SSE also sets default-deny CORS, exposing only `Mcp-Session-Id`.
 - **Errors are masked.** Upstream/internal error detail is logged to stderr (structlog JSON) and never returned to the model.
@@ -207,8 +207,8 @@ termdat-mcp/
 - **`SearchTerm` is Lucene, and matching is on whole words.** «Quellensteuer» does not match «Quellensteuerverordnung»; «Quellensteuer*» does. `*`, `?` and `~` are available — on an empty result, retry with a wildcard before concluding the term is absent.
 - **`Field.*` flags default to true where unsent.** `Terminus`, `Name`, `Abbreviation` and `Phraseology` are on unless explicitly disabled, so a partial flag set can only widen a search. This server sends all eleven flags explicitly, which is what makes `fields` able to narrow.
 - **Multilingual variants are opt-in.** Without `OutLanguageCode`, entries return German designations only. `translate_term` sets it for you.
-- **The public API exposes less than the website.** Not a scope setting — a coverage limit of the source. For «Quellensteuer» the website lists 12 distinct entries and the API returns 7 at maximum recall (every language, all 11 fields, infix wildcard, all classifications and collections). The overlap is **one** entry, 447912. Fetching the missing IDs directly via `/v2/Entry` returns HTTP 200 with an empty body — they are not served at all, so no query can reach them. One exception, 1557, is served but carries status `In Bearbeitung` in a collection marked «(aufgehoben)», which suggests the search index covers validated entries while the website also shows drafts and repealed material. Consequence: absence from this server means absence from the **API**, not from TERMDAT. Verified 2026-07-30 with the entry IDs supplied by @dfch in [issue #11](https://github.com/malkreide/termdat-mcp/issues/11); worth raising with the Federal Chancellery rather than working around.
-- **No licence statement.** The I14Y catalogue record carries `license: null`. Clarify terms with the Federal Chancellery before republishing TERMDAT content downstream. Every response repeats this in `source`.
+- **The public API exposes less than the website — deliberately.** Not a scope setting, and not a defect: asked directly, the Federal Chancellery's Terminology Section [confirmed on 2026-08-21](docs/bk-auskunft-2026-08-21.md) that the API covers only part of the TERMDAT records, that the selection follows **the needs of the federal administration's translators**, and that **no fuller coverage is planned**. Measured beforehand: for «Quellensteuer» the website lists 12 distinct entries and the API returns 7 at maximum recall (every language, all 11 fields, infix wildcard, all classifications and collections); the overlap is **one** entry, 447912. Fetching the missing IDs directly via `/v2/Entry` returns HTTP 200 with an empty body — they are not served at all, so no query can reach them. Consequence: absence from this server means absence from the **API**, not from TERMDAT, and there is nothing to work around. Verified 2026-07-30 with the entry IDs supplied by @dfch in [issue #11](https://github.com/malkreide/termdat-mcp/issues/11).
+- **The I14Y catalogue record carries `license: null` — the terms are elsewhere.** Reuse and republication of TERMDAT content are permitted only with the source `www.termdat.ch` named, and the Terminology Section of the Federal Chancellery informed of purpose and manner beforehand (`terminologie@bk.admin.ch`; [statement of 2026-08-21](docs/bk-auskunft-2026-08-21.md)). Running this server is covered by the enquiry that produced that statement; your own downstream republication needs its own notice. Every response repeats the terms in `source`.
 - **Entry-level language coverage varies.** Not every entry exists in all four languages; `translate_term` omits entries without a target-language variant rather than inventing one.
 
 ### Live probe findings (2026-07-19)
@@ -318,7 +318,7 @@ See [SECURITY.md](SECURITY.md) for the security posture, hardening controls, and
 
 ## License
 
-MIT for this server — see [LICENSE](LICENSE). TERMDAT content remains subject to the Federal Chancellery's terms.
+MIT for this server — see [LICENSE](LICENSE). TERMDAT content remains subject to the Federal Chancellery's terms: name the source `www.termdat.ch` and inform the Terminology Section beforehand of purpose and manner of any reuse or republication ([statement of 2026-08-21](docs/bk-auskunft-2026-08-21.md)).
 
 ## Author
 

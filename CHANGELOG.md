@@ -8,6 +8,41 @@ versioning follows [SemVer](https://semver.org/).
 
 ### Behoben
 
+- **Der Server behauptete, die Nutzungsbedingungen seien unbekannt.** Das Feld
+  `source` jeder Antwort sagte «The I14Y catalogue record carries no explicit
+  licence statement — clarify terms with the Federal Chancellery before
+  republishing». Der Katalogeintrag fuehrt tatsaechlich `license: null`, die
+  Bedingungen gibt es trotzdem: Auf Anfrage hat die Sektion Terminologie der
+  Bundeskanzlei am 21.08.2026 geantwortet, dass Weiterverwendung und
+  Weiterveroeffentlichung nur unter Angabe der Quelle `www.termdat.ch` zulaessig
+  sind und die Sektion vorgaengig ueber Zweck und Art zu informieren ist. Eine
+  Bedingung, die niemand nennt, kann niemand erfuellen — der Hinweis schob die
+  Klaerung jedem Einzelnen zu, statt sie einmal einzuholen. `ATTRIBUTION` nennt
+  jetzt beide Auflagen; die Auskunft steht im Wortlaut in
+  `docs/bk-auskunft-2026-08-21.md`.
+
+- **Die Erklaerung der Abdeckungsluecke war eine Vermutung, formuliert wie ein
+  Befund.** READMEs und Tool-Beschreibung leiteten aus einem einzigen
+  ausgelieferten Entwurfseintrag (1557) ab, «der Suchindex deckt validierte
+  Eintraege ab». Die Bundeskanzlei nennt ein anderes Kriterium: Die Auswahl
+  orientiert sich am Bedarf der Uebersetzerinnen und Uebersetzer der
+  Bundesverwaltung, die Teilabdeckung ist beabsichtigt und eine vollstaendigere
+  Abdeckung ist nicht geplant. Damit faellt auch der Satz weg, das sei «eher ein
+  Fall fuer eine Rueckfrage als fuer einen Workaround» — die Rueckfrage ist
+  beantwortet, einen Workaround gibt es nicht.
+
+- **`check_terms` setzte «nicht gefunden» mit «nicht in TERMDAT» gleich.** Der
+  `caveat` sagte woertlich «'not_found' means 'not in TERMDAT'», und derselbe
+  Kurzschluss stand im `hint` auf Leermengen («absent from TERMDAT»). Gemessen
+  ist nur die API, und die ist erklaertermassen ein Ausschnitt: Beide Stellen
+  sagen jetzt «not in the public API» und verweisen auf `www.termdat.ch`.
+
+- **Tests fuer diese Texte.** `tests/test_terms_of_use.py` prueft, dass die
+  Quellenangabe `www.termdat.ch` und die Meldepflicht nennt, dass sie in einer
+  echten Antwort ankommt und dass weder `caveat` noch `hint` eine Leermenge
+  wieder zu einer Aussage ueber TERMDAT machen. Die Texte sind hier das Produkt
+  — das Modell sieht nie die Auskunft, nur diese Felder.
+
 - **Browser-Clients scheiterten am Preflight.** Spec `2026-07-28` routet eine
   Anfrage über `Mcp-Method`, `Mcp-Name` und `Mcp-Protocol-Version`; die
   CORS-Freigabeliste nannte keinen davon, dafür mit `Mcp-Session-Id` den

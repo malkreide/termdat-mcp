@@ -40,7 +40,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff==0.16.3"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff==0.16.4"]
 
 [project.scripts]
 termdat-mcp = "termdat_mcp.__main__:main"

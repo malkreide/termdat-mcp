@@ -332,11 +332,13 @@ entgegengesetzte Bedeutungen aus derselben, unveränderten Kommentar-ID;
 Formen oben stehen fest, sobald sie da sind — diese nicht. Wer früh liest und
 das Ergebnis als Befund notiert, schreibt einen Zwischenstand fort.
 
-Wann er erscheint, ist ebenfalls zweimal gemessen: 11 s nach «ready» (#64) und
-10 s (#65), mit einem Laufbeginn 7 bzw. 6 s nach «ready». Wer in zwei bis vier
-Sekunden mergt, mergt also, bevor der Kasten existiert — dass unmittelbar nach
-einem Merge kein Bot-Kommentar dasteht, ist deshalb kein Befund, sondern zu
-früh geschaut.
+Wann er erscheint, ist inzwischen viermal gemessen: 10 bis 15 s nach «ready»,
+mit einem Laufbeginn 6 bis 8 s danach (Rohwerte in
+[`docs/codex-statuskasten-messreihe.md`](docs/codex-statuskasten-messreihe.md)).
+Wer in zwei bis vier Sekunden mergt, mergt also, bevor der Kasten existiert —
+dass unmittelbar nach einem Merge kein Bot-Kommentar dasteht, ist deshalb kein
+Befund, sondern zu früh geschaut. Und `updated_at` taugt nicht als Ersatz für
+den Text: Bei #67 stieg es, während der Kasten noch `Running` sagte.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche

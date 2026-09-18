@@ -20,11 +20,11 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", validation_alias="TERMDAT_MCP_LOG_LEVEL")
     vocab_ttl_seconds: int = Field(default=24 * 60 * 60, validation_alias="TERMDAT_MCP_VOCAB_TTL")
 
-    # SSE/HTTP CORS: default-deny. Set a comma-free JSON list or a single origin.
+    # HTTP CORS: default-deny. Set a comma-free JSON list or a single origin.
     # Empty means no browser origin is allowed (server-to-server / local only).
     cors_allow_origins: list[str] = Field(default_factory=list, validation_alias="TERMDAT_MCP_CORS_ORIGINS")
 
-    # Inbound Host allow-list for the SSE transport (SEC-005, inbound half).
+    # Inbound Host allow-list for the HTTP transport (SEC-005, inbound half).
     # e.g. TERMDAT_MCP_ALLOWED_HOSTS="mcp.example.ch,mcp.example.ch:443".
     # Only needed for a non-loopback bind: the reachable name is then a service
     # or public DNS name this process cannot derive from the bind address.
@@ -32,6 +32,15 @@ class Settings(BaseSettings):
 
     @property
     def is_network_transport(self) -> bool:
+        """Alle drei Werte bedienen Streamable HTTP unter `/mcp`.
+
+        `sse` ist seit dem 18.09.2026 nur noch ein Alias und warnt beim Start:
+        der SSE-Transport des SDK kennt die Weiche in die Protokoll-Aera
+        `2026-07-28` nicht, ueber das Netz war sie damit unerreichbar. Den Wert
+        hier abzulehnen waere sauberer und zugleich der Bruch, der jedes
+        bestehende Deployment beim naechsten Start anhaelt — ein Alias mit
+        Warnung sagt dasselbe, ohne den Dienst zu stoppen.
+        """
         return self.transport.lower() in ("sse", "streamable-http", "http")
 
 

@@ -27,7 +27,7 @@ Dateisystem-Fähigkeiten, und es werden keine Personendaten verarbeitet.
 | Tools | Alle mit `readOnlyHint: true`, `destructiveHint: false` annotiert; keine dynamische oder Remote-Tool-Registrierung |
 | Fehler | Upstream-RFC-9110-Fehlerbodies werden als strukturierte Daten offengelegt, nie stillschweigend verschluckt |
 | Stdout | Reserviert für den JSON-RPC-Stream; der Server gibt kein Fremd-Logging auf stdout aus |
-| Binding | `stdio` als Default (keine Netzwerk-Angriffsfläche). SSE bindet an `HOST`, Default `127.0.0.1` (Loopback); `0.0.0.0` ist ein expliziter Opt-in und warnt ausserhalb eines Containers auf stderr (SEC-016) |
+| Binding | `stdio` als Default (keine Netzwerk-Angriffsfläche). Der Streamable-HTTP-Transport bindet an `HOST`, Default `127.0.0.1` (Loopback); `0.0.0.0` ist ein expliziter Opt-in und warnt ausserhalb eines Containers auf stderr (SEC-016) |
 
 ## Akzeptierte Risiken (Kontrollen auf Portfolio-Ebene)
 
@@ -41,7 +41,7 @@ Open-Data-Anbieter erreicht.
 - **Server-übergreifende Tool-Poisoning-Erkennung** — Aufgabe des Gateways/Hosts.
   Die Tool-Definitionen dieses Servers sind versioniert, in-repo verfasst und per
   PR reviewt; es gibt keine dynamische oder Remote-Tool-Registrierung.
-- **Netzwerk-Binding für gehostete Deployments** — der SSE-Transport bindet für
+- **Netzwerk-Binding für gehostete Deployments** — der HTTP-Transport bindet
   standardmässig an `127.0.0.1` (Loopback). Ein Binding an `0.0.0.0` ist ein
   expliziter Opt-in für Container-Deployments; dann mit einem Reverse-Proxy /
   Gateway betreiben, das TLS und Zugriffskontrolle erzwingt.

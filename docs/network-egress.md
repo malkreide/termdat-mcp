@@ -25,7 +25,7 @@ URL cannot cause a request to any other host. The allow-list is a module-level
 
 ## Network-layer control (deployment)
 
-When deploying the SSE container, pair the code-layer allow-list with a
+When deploying the HTTP container, pair the code-layer allow-list with a
 network-layer egress control so the pod/VM can only reach the host above:
 
 - **Kubernetes:** a `NetworkPolicy` with an egress rule to the TERMDAT host on 443.

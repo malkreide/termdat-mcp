@@ -30,23 +30,41 @@ Die Freigabeliste war also nicht falsch besetzt, sondern unvollstaendig.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import pytest
 from starlette.testclient import TestClient
 
-from termdat_mcp.__main__ import CORS_ROUTING_HEADERS, build_http_app, settings
+from termdat_mcp.__main__ import (
+    CORS_METHODS,
+    CORS_ROUTING_HEADERS,
+    CORS_SESSION_HEADERS,
+    STREAMABLE_HTTP_PATH,
+    build_http_app,
+    settings,
+)
 from termdat_mcp.server import mcp
 
 ORIGIN = "https://client.example"
-ENDPOINT = "/sse"
+ENDPOINT = STREAMABLE_HTTP_PATH
 
 
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
+def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
+    """Mit Lifespan, nicht bloss zusammengebaut.
+
+    Ein Preflight kommt nicht ueber die Middleware hinaus und laeuft auch ohne
+    — eine echte Anfrage nicht: `StreamableHTTPSessionManager` legt seine
+    Task-Gruppe im Lifespan an und antwortet sonst mit `RuntimeError`. Die
+    Fixture ohne `with` liess also genau die Tests scheitern, die mehr pruefen
+    als den Preflight.
+    """
     monkeypatch.setattr(settings, "cors_allow_origins", [ORIGIN])
-    return TestClient(build_http_app())
+    with TestClient(build_http_app()) as c:
+        yield c
 
 
-def preflight(client: TestClient, announced: str):
+def preflight(client: TestClient, announced: str, method: str = "POST"):
     """Ein Preflight, der `announced` als Wunschheader anmeldet.
 
     Der Header muss auf der Anfrage stehen, nicht nur in der Antwort gelesen
@@ -57,7 +75,7 @@ def preflight(client: TestClient, announced: str):
         ENDPOINT,
         headers={
             "Origin": ORIGIN,
-            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Method": method,
             "Access-Control-Request-Headers": announced,
         },
     )
@@ -112,22 +130,101 @@ async def test_kein_tool_schema_verlangt_einen_mcp_param_header() -> None:
     assert not offenders, f"{offenders} brauchen einen Mcp-Param-*-Eintrag in der Freigabeliste"
 
 
-def test_der_session_header_ist_weiterhin_freigegeben(client: TestClient) -> None:
+@pytest.mark.parametrize("header", CORS_SESSION_HEADERS)
+def test_die_session_header_sind_weiterhin_freigegeben(client: TestClient, header: str) -> None:
     """Haelt die Aussage im Docstring oben, statt sie nur zu behaupten.
 
     Eine fruehere Fassung nannte `Mcp-Session-Id` den Header einer Mechanik,
     die `2026-07-28` abgeschafft habe. Das SDK sagt etwas anderes, und dieser
     Test sagt es mit: die Konstante existiert, und der Preflight laesst den
-    Header durch.
+    Header durch. `Last-Event-ID` gehoert seit dem Wechsel auf Streamable HTTP
+    dazu — er nimmt einen abgerissenen Stream wieder auf, und ohne Freigabe
+    beginnt ein Browser-Client nach jedem Abriss von vorn.
 
     Faellt er, ist eines von beidem passiert — die Mechanik ist tatsaechlich
     weg, oder jemand hat den Header aus der Freigabeliste genommen. Beides ist
     eine bewusste Entscheidung und keine, die still passieren darf.
     """
+    resp = preflight(client, header)
+    assert resp.status_code == 200, f"{header} wird am Preflight abgewiesen"
+    assert header.lower() in resp.headers["access-control-allow-headers"].lower()
+
+
+def test_die_session_header_heissen_wie_im_sdk() -> None:
+    """Gegen die Konstanten gehalten, nicht gegen abgeschriebenen Spec-Text."""
+    from mcp.server.streamable_http import LAST_EVENT_ID_HEADER, MCP_SESSION_ID_HEADER
+
+    listed = {h.lower() for h in CORS_SESSION_HEADERS}
+    assert {MCP_SESSION_ID_HEADER, LAST_EVENT_ID_HEADER} <= listed
+
+
+@pytest.mark.parametrize("method", CORS_METHODS)
+def test_der_preflight_laesst_jede_methode_des_endpunkts_durch(client: TestClient, method: str) -> None:
+    """Streamable HTTP beantwortet GET, POST und DELETE — das SDK sagt es
+    selbst im `Allow`-Header seiner 405-Antwort.
+
+    `DELETE` beendet eine Session ausdruecklich und fehlte in der Freigabeliste,
+    solange nur SSE bedient wurde: dort gibt es keine Session zum Beenden. Ohne
+    Freigabe laesst ein Browser die Session stattdessen auslaufen.
+    """
+    resp = preflight(client, "content-type", method=method)
+    assert resp.status_code == 200, f"Preflight fuer {method} wurde abgewiesen"
+    assert method.lower() in resp.headers["access-control-allow-methods"].lower()
+
+
+def test_die_methodenliste_deckt_ab_was_der_endpunkt_annimmt(client: TestClient) -> None:
+    """Der Test, der die Liste nicht bloss sich selbst vorhaelt.
+
+    Der parametrierte Test darueber zieht seine Faelle aus `CORS_METHODS` — wer
+    dort `DELETE` streicht, streicht damit auch den Fall, der es geprueft
+    haette. Genau so verschwand `DELETE` unbemerkt, als nur SSE bedient wurde.
+    Diese Zusicherung fragt stattdessen den Endpunkt selbst: das SDK nennt im
+    `Allow`-Header seiner 405-Antwort, was es annimmt.
+    """
+    allow = client.put(ENDPOINT, headers={"Host": "127.0.0.1:8000"})
+    assert allow.status_code == 405
+
+    accepted = {m.strip().upper() for m in allow.headers["allow"].split(",")}
+    assert accepted <= {m.upper() for m in CORS_METHODS}, (
+        f"der Endpunkt nimmt {sorted(accepted)} an, CORS gibt nur {sorted(CORS_METHODS)} frei"
+    )
+
+
+def test_eine_nicht_freigegebene_methode_wird_abgewiesen(client: TestClient) -> None:
+    """Negativkontrolle zur Methodenliste: ohne sie waere der Test oben auch
+    gegen eine Schicht gruen, die jede Methode durchwinkt."""
+    assert preflight(client, "content-type", method="PATCH").status_code == 400
+
+
+def test_die_session_id_bleibt_fuer_den_browser_lesbar(client: TestClient) -> None:
+    """`expose_headers` ist die andere Richtung: ohne sie darf JavaScript den
+    Antwortheader nicht lesen, obwohl der Server ihn schickt — und der Client
+    haette keine Session, mit der er weitermachen koennte."""
+    resp = client.options(
+        ENDPOINT,
+        headers={"Origin": ORIGIN, "Access-Control-Request-Method": "POST"},
+    )
+    assert resp.status_code == 200
     from mcp.server.streamable_http import MCP_SESSION_ID_HEADER
 
-    assert MCP_SESSION_ID_HEADER == "mcp-session-id"
-
-    resp = preflight(client, MCP_SESSION_ID_HEADER)
-    assert resp.status_code == 200, "der Session-Header wird am Preflight abgewiesen"
-    assert MCP_SESSION_ID_HEADER in resp.headers["access-control-allow-headers"].lower()
+    post = client.post(
+        ENDPOINT,
+        json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-11-25",
+                "capabilities": {},
+                "clientInfo": {"name": "termdat-mcp-tests", "version": "0"},
+            },
+        },
+        headers={
+            "Origin": ORIGIN,
+            "Host": "127.0.0.1:8000",
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+        },
+    )
+    assert post.headers.get(MCP_SESSION_ID_HEADER)
+    assert MCP_SESSION_ID_HEADER in post.headers["access-control-expose-headers"].lower()

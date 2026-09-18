@@ -6,7 +6,63 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Geaendert
+
+- **Der Netz-Transport ist Streamable HTTP unter `/mcp`, nicht mehr SSE unter
+  `/sse`.** Gemessen am 18.09.2026 gegen `mcp` 2.2.0: Eine `tools/list`-Anfrage
+  mit dem `2026-07-28`-Envelope bekam gegen die bisherige App `/sse` → 405,
+  `/mcp` → 404, `/messages/` → 400; gegen `streamable_http_app()` antwortet
+  dieselbe Anfrage mit 200. Die Weiche in die moderne Protokoll-Aera steht in
+  `StreamableHTTPSessionManager._handle_request`; `mcp/server/sse.py` erwaehnt
+  sie nirgends. Der Server erreichte ueber das Netz also nur die Handshake-Aera
+  — die Spec-Revision, die beide READMEs seit Monaten als bedient auswiesen,
+  war fuer jeden HTTP-Client unerreichbar.
+
+  Unbemerkt blieb das aus zwei Gruenden, die einander deckten: stdio bedient
+  die moderne Aera tatsaechlich (ebenfalls nachgemessen, `python -m termdat_mcp`
+  antwortet auf denselben Envelope), und die Suite pinnte die Revision nur
+  gegen SDK-Konstanten. Eine Konstante, die `2026-07-28` sagt, sagt nichts
+  darueber, ob eine Anfrage dort ankommt.
+
+- **`TERMDAT_MCP_TRANSPORT=sse` bleibt gueltig, bedient aber `/mcp` und warnt
+  beim Start** — auf stderr und im Log. Den Wert abzulehnen waere sauberer und
+  zugleich der Bruch, der jedes bestehende Deployment beim naechsten Start
+  anhaelt. **Deployments muessen ihre Clients auf `/mcp` umstellen**; der alte
+  Pfad antwortet mit 404. Das `Dockerfile` setzt jetzt `streamable-http`.
+
+- **CORS gibt frei, was der Endpunkt tatsaechlich annimmt.** `DELETE` (die
+  ausdrueckliche Beendigung einer Session) und `Last-Event-ID` (Wiederaufnahme
+  eines abgerissenen Streams) fehlten in der Freigabeliste — unter SSE gab es
+  beides nicht. `tests/test_cors.py` liest die Methodenliste jetzt aus dem
+  `Allow`-Header einer echten 405-Antwort des SDK statt aus der eigenen
+  Konstante: Der parametrierte Test daneben zieht seine Faelle aus derselben
+  Liste und haette das Streichen von `DELETE` mitgestrichen.
+
+### Hinzugefuegt
+
+- **`tests/test_streamable_http.py` — beide Protokoll-Aeren, gemessen statt
+  gepinnt.** Echte HTTP-Anfragen durch den zusammengebauten ASGI-Stack: der
+  Handshake antwortet fuer jede der vier Revisionen `2024-11-05` … `2025-11-25`
+  mit der angefragten und deckelt eine zu neue bei `2025-11-25`; der Envelope
+  oeffnet die moderne Aera, deren Antwort den Pflicht-`resultType` und die
+  Cache-Hinweise traegt; eine unbekannte moderne Revision wird mit `-32022`
+  samt `supported`/`requested` abgewiesen, ein Envelope-loser Aufruf mit
+  `-32602`, ein Header, der dem Body widerspricht, mit `-32020`.
+
+  Gegenprobe gefahren: Mit `mcp.sse_app()` an derselben Stelle fallen 14 der 15
+  Zusicherungen. Gruen bleibt allein die, die die Deprecation-Warnung prueft —
+  die haengt nicht am Transport.
+
 ### Behoben
+
+- **Die Cache-Hinweise nach SEP-2549 erreichten ueber das Netz keine Leitung.**
+  `server.py` setzt `CACHE_HINTS` seit laengerem, und `tests/test_cache_hints.py`
+  belegt sie ueber eine In-Process-`ClientSession`. Ueber HTTP kamen sie
+  trotzdem nirgends an: Die Handshake-Aera siebt `ttlMs` und `cacheScope` aus
+  dem Resultat (ihr Schema kennt die Felder nicht, gemessen: die
+  `tools/list`-Antwort traegt ausser `tools` kein einziges Feld), und die
+  moderne Aera, in der die Felder stehen, war unerreichbar. Seit dem Wechsel
+  antwortet `tools/list` mit `ttlMs: 300000` und `cacheScope: "public"`.
 
 - **Der Server behauptete, die Nutzungsbedingungen seien unbekannt.** Das Feld
   `source` jeder Antwort sagte «The I14Y catalogue record carries no explicit

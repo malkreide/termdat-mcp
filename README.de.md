@@ -44,7 +44,7 @@ Die dreizehn «Bildung»-Treffer sind Organisationsbezeichnungen — Bildungsdir
 - Kommunikations-QA: bis zu 25 Begriffe in einem Aufruf gegen validierte Benennungen prüfen.
 - Vokabular-Cache (24 h TTL) für die 140 Sammlungen und 23 Klassifikationen, mit Stale-Serve-Fallback.
 - Retry mit exponentiellem Backoff (2/4/8 s); explizites `MaxEntryCount`, um stille Kürzung zu vermeiden.
-- Dual-Transport: `stdio` (lokal) und SSE (Cloud).
+- Dual-Transport: `stdio` (lokal) und Streamable HTTP (Cloud). Beide bedienen die MCP-Protokollrevision `2026-07-28`.
 - Keine Authentifizierung nötig — öffentliche, unauthentifizierte API (No-Auth-First).
 
 ## 🎯 Anchor Demo Query
@@ -98,10 +98,10 @@ Die gesamte Konfiguration läuft über Umgebungsvariablen. Die Defaults sind fü
 
 | Variable | Default | Zweck |
 |---|---|---|
-| `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (lokal) oder `sse` / `streamable-http` / `http` (Cloud) |
-| `HOST` | `127.0.0.1` | Bind-Host (nur SSE-Transport). Standardmässig Loopback; `HOST=0.0.0.0` **nur** im Container setzen |
-| `PORT` | `8000` | Bind-Port (nur SSE-Transport) |
-| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | Nur SSE: explizit erlaubte Browser-Origins (Default-Deny; in Produktion nie Wildcard) |
+| `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (lokal) oder `streamable-http` / `http` (Cloud). `sse` gilt als veralteter Alias und bedient jetzt Streamable HTTP unter `/mcp` — mit Warnung beim Start |
+| `HOST` | `127.0.0.1` | Bind-Host (nur HTTP-Transport). Standardmässig Loopback; `HOST=0.0.0.0` **nur** im Container setzen |
+| `PORT` | `8000` | Bind-Port (nur HTTP-Transport) |
+| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | Nur HTTP: explizit erlaubte Browser-Origins (Default-Deny; in Produktion nie Wildcard) |
 | `TERMDAT_MCP_LOG_LEVEL` | `INFO` | structlog-Level (JSON auf stderr) |
 | `TERMDAT_MCP_VOCAB_TTL` | `86400` | TTL des Vokabular-Caches in Sekunden |
 
@@ -110,7 +110,7 @@ Die Konfiguration wird einmalig in ein typisiertes `Settings`-Objekt (pydantic-s
 Cloud (Render / Railway):
 
 ```bash
-TERMDAT_MCP_TRANSPORT=sse PORT=8000 termdat-mcp   # exponiert /sse
+TERMDAT_MCP_TRANSPORT=streamable-http PORT=8000 termdat-mcp   # exponiert /mcp
 ```
 
 ## Verfügbare Tools
@@ -136,7 +136,7 @@ einem `tools/`-Paket.
 ## Architektur
 
 ```
-┌─────────────────┐   stdio / SSE    ┌──────────────────────────┐
+┌─────────────────┐  stdio / HTTP    ┌──────────────────────────┐
 │  MCP-Host       │ ───────────────► │  termdat-mcp             │
 │  (Claude, IDE)  │ ◄─────────────── │                          │
 └─────────────────┘                  │  Vokabular-Cache (24 h)  │
@@ -173,7 +173,7 @@ Konsequenzen:
 termdat-mcp/
 ├── src/termdat_mcp/
 │   ├── __init__.py
-│   ├── __main__.py       # Einstiegspunkt; Dual-Transport (stdio / SSE)
+│   ├── __main__.py       # Einstiegspunkt; Dual-Transport (stdio / Streamable HTTP)
 │   ├── client.py         # httpx-Client, Retry, Vokabular-Cache
 │   ├── models.py         # Pydantic-Modelle
 │   └── server.py         # MCP-Tool-Definitionen
@@ -195,10 +195,10 @@ termdat-mcp/
 - **Kürzung ist explizit.** `MaxEntryCount` wird immer gesendet und `truncated` gemeldet (siehe Bekannte Einschränkungen).
 - **Nutzungsbedingungen sind erfragt, nicht vermutet.** Jede Antwort führt sie im Feld `source`: Weiterverwendung und Weiterveröffentlichung sind nur mit Quellenangabe `www.termdat.ch` zulässig, und die Sektion Terminologie der Bundeskanzlei ist vorgängig über Zweck und Art zu informieren ([Auskunft vom 21.08.2026](docs/bk-auskunft-2026-08-21.md)).
 - **Egress-Allow-List.** Anfragen erreichen nur `api.termdat.bk.admin.ch` (HTTPS), vor jedem Aufruf durch ein eingefrorenes `ALLOWED_HOSTS`-Set erzwungen — kein Nutzer-Input kann den Egress umlenken. Siehe [`docs/network-egress.md`](docs/network-egress.md).
-- **Loopback als Default.** SSE bindet an `127.0.0.1`; `0.0.0.0` ist ein expliziter Container-Opt-in mit stderr-Warnung. SSE setzt zudem Default-Deny-CORS und exponiert nur `Mcp-Session-Id`.
+- **Loopback als Default.** Der HTTP-Transport bindet an `127.0.0.1`; `0.0.0.0` ist ein expliziter Container-Opt-in mit stderr-Warnung. Er setzt zudem Default-Deny-CORS und exponiert nur `Mcp-Session-Id`.
 - **Fehler werden maskiert.** Upstream-/interne Fehlerdetails gehen als structlog-JSON auf stderr und werden nie an das Modell zurückgegeben.
 - **Akzeptierte Risiken (ADRs):** DNS-Pinning ([ADR 0001](docs/adr/0001-dns-pinning.md)) und Stateful Load Balancing ([ADR 0002](docs/adr/0002-scaling-and-deployment.md)) sind bewusst zurückgestellt — geringes Risiko bei Single-Instance, Single-Host, ohne Auth.
-- **Container.** Ein gehärtetes, non-root [`Dockerfile`](Dockerfile) liegt für SSE-Deployments bei.
+- **Container.** Ein gehärtetes, non-root [`Dockerfile`](Dockerfile) liegt für gehostete Deployments bei.
 
 ## Bekannte Einschränkungen
 
@@ -269,9 +269,9 @@ Kontrollen erfordern, bevor ein schreibfähiges Tool hinzukommt.
 
 ## MCP-Protokoll-Version
 
-Dieser Server bedient **zwei Protokoll-Aeren** ueber denselben Endpunkt. Die
-erste Anfrage einer Verbindung entscheidet, welche gilt; ein spaeterer Anspruch
-aus der jeweils anderen Aera wird abgewiesen.
+Dieser Server bedient **zwei Protokoll-Aeren** ueber denselben Endpunkt, auf
+beiden Transporten. Die erste Anfrage einer Verbindung entscheidet, welche gilt;
+ein spaeterer Anspruch aus der jeweils anderen Aera wird abgewiesen.
 
 | Aera | Revision | Wer sie erreicht |
 |---|---|---|
@@ -281,9 +281,17 @@ aus der jeweils anderen Aera wird abgewiesen.
 Beide Revisionen sind in
 [`tests/test_protocol_version.py`](tests/test_protocol_version.py) gepinnt und
 werden gegen das installierte SDK geprueft; ein Dependabot-Bump von `mcp` kann
-also keine der beiden still verschieben. Dieser Server baut keine ASGI-App, durch die sich ein `initialize`
-schicken liesse; das Gate sichert deshalb die SDK-Konstanten statt einer
-gemessenen Antwort — die schwaechere Form, benannt statt verschwiegen.
+also keine der beiden still verschieben.
+
+**Dieser Pin allein hat einmal eine echte Luecke verdeckt.** Bis zum 18.09.2026
+war der Netz-Transport die SSE-App des SDK, und die kennt gar keinen Zweig in
+die moderne Aera — ueber HTTP war `2026-07-28` unerreichbar, waehrend die
+Konstanten etwas anderes sagten und stdio sie bediente. Seit dem Wechsel auf
+Streamable HTTP unter `/mcp` sind beide Aeren zusaetzlich *gemessen*:
+[`tests/test_streamable_http.py`](tests/test_streamable_http.py) schickt echte
+Anfragen beider Art durch den zusammengebauten ASGI-Stack und prueft die
+ausgehandelte Revision, den Pflicht-`resultType` und die `-32022`-Abweisung
+einer unbekannten modernen Revision.
 
 Zu beachten: `LATEST_PROTOCOL_VERSION` im SDK ist ein Alias auf die **moderne**
 Aera, nicht auf die Handshake-Aera — wer nur dagegen pinnt, laesst genau die

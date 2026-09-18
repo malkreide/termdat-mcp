@@ -28,10 +28,15 @@ Nachgemessen statt aus Konstantennamen geschlossen: die Aushandlung steht in
 
 — sie haengt an keinem Transport, gilt also fuer stdio ebenso wie fuer HTTP.
 
-Ohne gemessenen Teil: dieses Repo baut keine ASGI-App, durch die sich ein
-`initialize` schicken liesse. Die Zusicherungen unten haengen deshalb an den
-SDK-Konstanten. Das ist die schwaechere Form, und sie steht hier benannt statt
-unausgesprochen.
+Die Zusicherungen unten haengen an den SDK-Konstanten — die schwaechere Form.
+Bis zum 18.09.2026 war sie die einzige, und das war der Grund, warum niemandem
+auffiel, dass der Netz-Transport `2026-07-28` gar nicht erreichte: Eine
+Konstante, die die Revision nennt, sagt nichts darueber, ob eine Anfrage dort
+ankommt. Der gemessene Teil steht seither in
+`tests/test_streamable_http.py`, das beide Aeren durch den zusammengebauten
+ASGI-Stack schickt. Dieses Modul bleibt daneben stehen und tut etwas anderes:
+Es faengt einen SDK-Bump ab, der eine Revision verschiebt, waehrend die
+gemessenen Antworten weiter zueinander passen.
 """
 
 from __future__ import annotations

@@ -1,8 +1,15 @@
-"""Inbound Host/Origin validation on the SSE transport (SEC-005, inbound half).
+"""Inbound Host/Origin validation on the HTTP transport (SEC-005, inbound half).
 
 The SDK leaves DNS-rebinding protection off while ``transport_security`` is
 unset. This server never set it, so there was no Host check at all. These tests
 pin the new behaviour and fail if the protection is dropped again.
+
+The allow-list is transport-independent: ``build_transport_security`` derives it
+from ``HOST``/``PORT``, and the same object goes to whichever app
+``build_http_app`` builds. The switch from SSE to Streamable HTTP on 18.09.2026
+therefore left every assertion here unchanged — which is a statement about this
+layer, not an excuse to skip it: the app it is handed to is checked in
+``tests/test_streamable_http.py``.
 """
 
 from __future__ import annotations

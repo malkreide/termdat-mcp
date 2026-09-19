@@ -332,13 +332,20 @@ entgegengesetzte Bedeutungen aus derselben, unveränderten Kommentar-ID;
 Formen oben stehen fest, sobald sie da sind — diese nicht. Wer früh liest und
 das Ergebnis als Befund notiert, schreibt einen Zwischenstand fort.
 
-Wann er erscheint, ist inzwischen viermal gemessen: 10 bis 15 s nach «ready»,
-mit einem Laufbeginn 6 bis 8 s danach (Rohwerte in
+Wann er erscheint, ist inzwischen siebenmal gemessen: 6 bis 15 s nach «ready»,
+mit einem Laufbeginn 6 bis 8 s danach — letzterer nur in vier der sieben Zeilen
+erfasst, weil ihn verliert, wer erst nach dem Abschluss liest (Rohwerte in
 [`docs/codex-statuskasten-messreihe.md`](docs/codex-statuskasten-messreihe.md)).
 Wer in zwei bis vier Sekunden mergt, mergt also, bevor der Kasten existiert —
 dass unmittelbar nach einem Merge kein Bot-Kommentar dasteht, ist deshalb kein
 Befund, sondern zu früh geschaut. Und `updated_at` taugt nicht als Ersatz für
 den Text: Bei #67 stieg es, während der Kasten noch `Running` sagte.
+
+Die Sekunde ist dabei nicht belastbar: Der «ready»-Zeitpunkt stammt aus der
+Benachrichtigung, nicht aus einer Primärquelle, und die lief beim Merge
+gemessen 1 bis 3 Sekunden nach. Die Spannen sind also grob zu lesen — für die
+einzige Frage, die sie beantworten sollen (mergt man vor dem Kasten?), reicht
+das.
 
 Und ein befundloser Lauf ist kein Freispruch. Am 23.8. lief derselbe Text durch
 42 Reviews: 36 meldeten denselben P2-Befund, 6 die Befundlos-Meldung — gleiche
@@ -361,26 +368,20 @@ bis fünf Sekunden. Codex wird beim Umschalten von Draft auf ready ausgelöst un
 braucht danach Zeit; wer sofort mergt, hat das Häkchen gesetzt und den Review
 nicht abgewartet.
 
-Den Lauf bricht der Merge deshalb aber nicht ab — zweimal am 30.8. gemessen,
-beide Male in `termdat-mcp`:
+Den Lauf bricht der Merge deshalb aber nicht ab — viermal gemessen, alle in
+`termdat-mcp` (#64, #65, #67, #70; Rohwerte in der Messreihe). In allen vier
+Fällen begann der Review **nach** dem Merge und lief auf genau dem gemergten
+Head zu Ende, zwischen 1:02 und 2:06 nach dem **Merge** (ab Laufbeginn
+gerechnet 1:00 bis 2:01). Verloren ist also nicht die Prüfung, sondern die
+Gelegenheit, auf einen Befund zu reagieren, bevor er in `main` steht — der
+Unterschied zählt, weil «nicht geprüft» eine Nacharbeit verlangt und «zu spät
+geprüft» ein Nachlesen.
 
-| | #64 | #65 |
-|---|---|---|
-| «ready» → Merge | 2 s (18:12:47 → :49) | 4 s (18:42:45 → :49) |
-| Laufbeginn laut Kasten | 18:12:54 | 18:42:51 |
-| Abschluss | 18:14:55 | 18:43:51 |
-
-In beiden Fällen begann der Review **nach** dem Merge und lief auf genau dem
-gemergten Head zu Ende, einmal nach 2:06, einmal nach 1:02. Verloren ist also
-nicht die Prüfung, sondern die Gelegenheit, auf einen Befund zu reagieren,
-bevor er in `main` steht — der Unterschied zählt, weil «nicht geprüft» eine
-Nacharbeit verlangt und «zu spät geprüft» ein Nachlesen.
-
-Zwei Fälle sind noch kein Gesetz, und sie decken nur eine Konstellation ab: In
-beiden fiel der Merge, bevor der Lauf überhaupt begonnen hatte. Ob ein Merge
-mitten in einen laufenden Review ihn ebenso überleben lässt, ist damit nicht
-gemessen; ein Lauf, der gar nicht erst anläuft, wäre auch etwas anderes als
-einer, der abgebrochen wird.
+Vier Fälle decken aber nur eine Konstellation ab: In allen fiel der Merge,
+bevor der Lauf überhaupt begonnen hatte, am knappsten bei #70 mit vier
+Sekunden Abstand. Ob ein Merge mitten in einen laufenden Review ihn ebenso
+überleben lässt, ist damit nicht gemessen; ein Lauf, der gar nicht erst
+anläuft, wäre auch etwas anderes als einer, der abgebrochen wird.
 
 Das Kontingent hängt am Konto, nicht am Repo, und Code-Reviews haben einen
 eigenen Topf — nur GitHub-getriggerte Reviews zählen hinein. ChatGPT-Pläne

@@ -433,10 +433,18 @@ wie der Code: Nichts ist rot, weil nichts geprüft wird, worauf es ankommt.
 
 ## Teil 2 — Dieses Repo
 
-**ruff: eine Quelle.** `pyproject.toml`, `dev`-Extra, `ruff==0.16.3`. Die CI
-hat keinen eigenen Pin-Schritt — der Install über `ci.yml` genügt, lokal wie
-dort. Eine `.pre-commit-config.yaml` gibt es nicht; wenn eine dazukommt, muss
-sie dieselbe Version aus `pyproject.toml` beziehen und keine zweite nennen.
+**ruff: eine Quelle.** Der exakte Pin steht in `pyproject.toml`, `dev`-Extra,
+als `ruff==X.Y.Z` — **hier bewusst nicht wiederholt.** Die CI hat keinen
+eigenen Pin-Schritt; der Install über `ci.yml` genügt, lokal wie dort. Eine
+`.pre-commit-config.yaml` gibt es nicht; wenn eine dazukommt, muss sie dieselbe
+Version aus `pyproject.toml` beziehen und keine zweite nennen.
+
+Die Nummer stand bis zum 19.9.2026 auch in diesem Absatz — und war dort
+zweimal falsch: Sie sagte `0.16.3`, während `pyproject.toml` erst auf `0.16.4`
+und nach einem Dependabot-Bump auf `0.16.5` stand. Ein Absatz, der «eine
+Quelle» verlangt und die Zahl selbst ein zweites Mal nennt, ist die zweite
+Quelle, vor der er warnt. Wer den aktuellen Wert braucht, liest ihn dort, wo
+`scripts/check_ruff_pin.py` ihn auch liest.
 
 Vor dem Lauf `ruff --version` prüfen: ein älteres ruff früher im `PATH`
 schlägt den Pin, ohne dass der Install etwas meldet.

@@ -6,6 +6,20 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+_Noch nichts._
+
+## [0.2.0] — 2026-09-19
+
+> ⚠️ **Breaking fuer gehostete Deployments.** Der Netz-Endpunkt ist `/mcp`
+> (Streamable HTTP) statt `/sse`; der alte Pfad antwortet mit 404. Die
+> Einstellung `TERMDAT_MCP_TRANSPORT` bleibt unveraendert gueltig — `sse` gilt
+> als Alias, bedient `/mcp` und warnt beim Start. Clients umstellen.
+>
+> stdio-Nutzung (Claude Desktop, `uvx termdat-mcp`) ist nicht betroffen.
+
+Minor statt Patch, obwohl das Schema `0.x` fuehrt: Der Endpunktwechsel bricht
+bestehende Netz-Clients, und eine Patch-Nummer haette das verschwiegen.
+
 ### Geaendert
 
 - **Der Netz-Transport ist Streamable HTTP unter `/mcp`, nicht mehr SSE unter

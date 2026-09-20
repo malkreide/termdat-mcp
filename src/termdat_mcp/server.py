@@ -21,6 +21,7 @@ from mcp.server.caching import CacheableMethod, CacheHint
 from mcp.server.mcpserver import Context, MCPServer
 from pydantic import Field
 
+from ._version import __homepage__, __summary__, __version__
 from .client import (
     DEFAULT_SEARCH_FIELDS,
     DESIGNATION_FIELDS,
@@ -85,7 +86,34 @@ CACHE_HINTS: dict[CacheableMethod, CacheHint] = {
     "server/discover": CacheHint(ttl_ms=LIST_CACHE_TTL_MS, scope="public"),
 }
 
-mcp = MCPServer("termdat-mcp", lifespan=_lifespan, cache_hints=CACHE_HINTS)
+# Dieselbe Luecke eine Ebene hoeher: ohne Handshake-Ergebnis ist `serverInfo`
+# der einzige Identitaetskanal — als `_meta`-Stempel auf jeder Antwort der
+# modernen Aera und im Ergebnis von `server/discover`.
+#
+# Gemessen vor dieser Zeile, offline durch den zusammengebauten ASGI-Stack:
+# `MCPServer` deckt `version` mit `""` vor und das SDK setzt nichts Eigenes
+# ein. Jede Antwort trug also `{"name": "termdat-mcp", "version": ""}` — in
+# beiden Aeren, ueber stdio wie ueber HTTP, und genau so gegen das
+# Railway-Deployment am 20.09.2026 gemessen. `version` ist in `Implementation`
+# ein Pflichtfeld; der leere String erfuellt es der Form nach und sagt nichts.
+#
+# Version, Beschreibung und URL kommen aus den Metadaten der installierten
+# Distribution (`_version`), nicht aus Literalen hier: `check_version_sync.py`
+# verbietet eine hartkodierte Version in `src/` ausdruecklich, und fuer die
+# beiden anderen gilt derselbe Grund, nur ohne Gate.
+#
+# `title` und `icons` bleiben ungesetzt: der Titel ist kein Metadatum und waere
+# das Literal, das hier gerade vermieden wird; fuer ein Icon braeuchte es eine
+# gehostete Grafik, und eine erfundene URL waere schlechter als das Feld
+# wegzulassen.
+mcp = MCPServer(
+    "termdat-mcp",
+    version=__version__,
+    description=__summary__,
+    website_url=__homepage__,
+    lifespan=_lifespan,
+    cache_hints=CACHE_HINTS,
+)
 
 _READ_ONLY: dict[str, Any] = {"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True}
 

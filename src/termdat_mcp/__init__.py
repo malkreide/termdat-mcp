@@ -1,16 +1,10 @@
 """MCP server for TERMDAT — terminology database of the Swiss Federal Administration."""
 
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _distribution_version
+# Version, Zusammenfassung und Projekt-URL löst `_version` auf, gespeist aus
+# den Metadaten der installierten Distribution. Die Auflösung stand bis hierher
+# in dieser Datei; sie ist nach `_version` gezogen, weil `server.py` inzwischen
+# dieselben Angaben braucht (`serverInfo`) und zwei Auflösungsstellen für eine
+# Angabe genau der Anfang der Drift sind, gegen die sie existiert.
+from ._version import __version__
 
-try:
-    # Read the version from the installed distribution metadata, which is built
-    # from pyproject.toml. Hand-maintaining the literal here let the numbers
-    # drift apart: pyproject said 0.1.1, this said 0.1.0. A value nobody
-    # has to remember to bump cannot go stale.
-    __version__ = _distribution_version("termdat-mcp")
-except PackageNotFoundError:
-    # Running from the source tree without an install (e.g. a bare checkout).
-    # Deliberately not a plausible-looking number: an obviously non-release
-    # marker is better than a wrong version in the User-Agent.
-    __version__ = "0.0.0+source"
+__all__ = ["__version__"]

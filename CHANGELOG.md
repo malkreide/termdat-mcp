@@ -6,7 +6,73 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
-_Noch nichts._
+Zwei Befunde aus dem Railway-Deployment vom 20.09.2026, beide gegen den
+laufenden Server gemessen und offline nachgestellt.
+
+### Behoben
+
+- **`serverInfo` nennt Version, Zweck und Herkunft statt eines leeren Strings.**
+  Gegen den Live-Server per `initialize` erhoben: Die Antwort trug
+  `{"name": "termdat-mcp", "version": ""}` — in beiden Protokoll-Ären, über
+  stdio wie über HTTP. `MCPServer` deckt `version` mit `""` vor, `server.py`
+  übergab nichts, und das SDK setzt nichts Eigenes ein. In `Implementation`
+  ist `version` ein Pflichtfeld; der leere String erfüllt es der Form nach und
+  sagt nichts.
+
+  Das wiegt schwerer, als es aussieht: In der Ära `2026-07-28` gibt es kein
+  Handshake-Ergebnis. Der `_meta`-Stempel auf jeder Antwort ist dort die
+  einzige Stelle, an der ein Client erfährt, mit welcher Fassung er spricht —
+  ein leeres Feld macht jede Meldung aus dem Betrieb unzuordenbar.
+
+  Version, Beschreibung und Projekt-URL kommen jetzt aus den Metadaten der
+  installierten Distribution, aufgelöst im neuen Modul
+  `src/termdat_mcp/_version.py` nach dem Muster von `lindas-mcp`. Keine
+  Literale in `src/`, die `scripts/check_version_sync.py` ohnehin verbietet.
+  `title` und `icons` bleiben ungesetzt: Der Titel ist kein Metadatum, und für
+  ein Icon bräuchte es eine gehostete Grafik — eine erfundene URL wäre
+  schlechter als ein leeres Feld.
+
+- **`TERMDAT_MCP_ALLOWED_HOSTS` und `TERMDAT_MCP_CORS_ORIGINS` lesen jetzt auch
+  die kommagetrennte Schreibweise.** Beide Variablen erzwangen JSON, während
+  alle übrigen Server des Portfolios dieselbe Variable kommagetrennt lesen.
+  Wer die Portfolio-Schreibweise verwendete, bekam beim Start einen
+  `SettingsError`.
+
+  Strenger noch, als der Kommentar im Code behauptete. Der sagte «a JSON list
+  or a single origin» — aber ein nacktes `mcp.example.ch` ist kein gültiges
+  JSON und starb am selben Parser wie die Kommaform. Der Einzelwert ging nie;
+  der Kommentar beschrieb ein Verhalten, das es nicht gab, und ist
+  mitkorrigiert.
+
+  JSON-Listen bleiben gültig. Leerraum und leere Einträge fallen in beiden
+  Formen weg: `"a.ch,"` und `'["a.ch", ""]'` meinen dasselbe und dürfen nicht
+  verschieden ausgehen. Ein Wert, der mit `[` beginnt, gilt als JSON — bei
+  einem Syntaxfehler wird das benannt statt still an die Kommaform
+  durchgereicht, sonst entstünde ein Host namens `["mcp.example.ch`, der nie
+  greift und nichts meldet.
+
+### Geändert
+
+- **Untergrenze `pydantic-settings>=2.7`** statt `>=2.0`. Die Kommaform
+  braucht `Annotated[list[str], NoDecode]`: `EnvSettingsSource` parst komplexe
+  Felder als JSON, **bevor** ein Validator läuft, und wirft dort — ein
+  `field_validator(mode="before")` allein sieht den Rohstring gar nicht erst.
+  `NoDecode` gibt es ab 2.7.0; 2.6.1, die höchste 2.6.x, kennt es nicht.
+  Gemessen, nicht geschätzt.
+
+### Dokumentiert
+
+- **`TERMDAT_MCP_ALLOWED_HOSTS` steht neu in den Konfigurationstabellen beider
+  READMEs.** Die Variable fehlte dort vollständig, obwohl ohne sie hinter
+  einem Nicht-Loopback-Bind gar keine Host-Prüfung stattfindet. Bei beiden
+  Listen-Variablen ist die kommagetrennte Form jetzt als empfohlene
+  Schreibweise ausgewiesen.
+
+### Hinweis für bestehende Deployments
+
+Wer korrektes JSON setzt, ist unberührt. Wer bisher `a.ch,b.ch` setzte, hatte
+einen Startabbruch — dieses Deployment startet künftig durch. Das ist die
+Behebung und zugleich eine Zustandsänderung, die man kennen sollte.
 
 ## [0.2.0] — 2026-09-19
 

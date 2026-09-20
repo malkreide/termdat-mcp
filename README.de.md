@@ -101,11 +101,32 @@ Die gesamte Konfiguration läuft über Umgebungsvariablen. Die Defaults sind fü
 | `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (lokal) oder `streamable-http` / `http` (Cloud). `sse` gilt als veralteter Alias und bedient jetzt Streamable HTTP unter `/mcp` — mit Warnung beim Start |
 | `HOST` | `127.0.0.1` | Bind-Host (nur HTTP-Transport). Standardmässig Loopback; `HOST=0.0.0.0` **nur** im Container setzen |
 | `PORT` | `8000` | Bind-Port (nur HTTP-Transport) |
-| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | Nur HTTP: explizit erlaubte Browser-Origins (Default-Deny; in Produktion nie Wildcard) |
+| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | Nur HTTP: explizit erlaubte Browser-Origins (Default-Deny; in Produktion nie Wildcard). Kommagetrennt, z. B. `https://a.example,https://b.example` |
+| `TERMDAT_MCP_ALLOWED_HOSTS` | `[]` | Nur HTTP: Allow-Liste für den eingehenden `Host`-Header. Kommagetrennt, z. B. `mcp.example.ch,mcp.example.ch:443`. Nötig bei einem **Nicht-Loopback-Bind** — ohne sie wird der `Host`-Header gar nicht geprüft |
 | `TERMDAT_MCP_LOG_LEVEL` | `INFO` | structlog-Level (JSON auf stderr) |
 | `TERMDAT_MCP_VOCAB_TTL` | `86400` | TTL des Vokabular-Caches in Sekunden |
 
 Die Konfiguration wird einmalig in ein typisiertes `Settings`-Objekt (pydantic-settings) geladen.
+
+**Listen-Variablen.** `TERMDAT_MCP_CORS_ORIGINS` und `TERMDAT_MCP_ALLOWED_HOSTS`
+nehmen eine **kommagetrennte Liste** — die empfohlene Schreibweise, und die,
+die auch die übrigen Server des Swiss-Public-Data-MCP-Portfolios verwenden:
+
+```bash
+TERMDAT_MCP_ALLOWED_HOSTS="mcp.example.ch,mcp.example.ch:443"
+```
+
+Eine JSON-Liste (`["mcp.example.ch"]`) bleibt gültig. Leerraum und leere
+Einträge fallen in beiden Formen weg, ein nachgestelltes Komma schadet also
+nicht. Ein Einzelwert braucht keine Klammern.
+
+**`TERMDAT_MCP_ALLOWED_HOSTS` zählt im Cloud-Betrieb.** Solange keine
+Allow-Liste konfiguriert ist, lässt das SDK den Schutz gegen DNS-Rebinding
+ausgeschaltet. Wer im Container an `0.0.0.0` bindet und diese Variable weglässt,
+bekommt also **gar keine** Prüfung des `Host`-Headers — der Server kann seinen
+eigenen öffentlichen Namen nicht aus der Bind-Adresse ableiten, und eine
+geratene Liste würde jede echte Anfrage mit HTTP 421 abweisen. Er warnt beim
+Start, wenn er in diesen Zustand zurückfallen muss.
 
 Cloud (Render / Railway):
 

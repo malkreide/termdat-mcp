@@ -101,11 +101,31 @@ All configuration is via environment variables. Defaults are safe for local use.
 | `TERMDAT_MCP_TRANSPORT` | `stdio` | Transport: `stdio` (local) or `streamable-http` / `http` (cloud). `sse` is accepted as a deprecated alias and now serves Streamable HTTP on `/mcp` — it warns on startup |
 | `HOST` | `127.0.0.1` | Bind host (HTTP transport only). Loopback by default; set `HOST=0.0.0.0` **only** inside a container |
 | `PORT` | `8000` | Bind port (HTTP transport only) |
-| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | HTTP only: explicit allowed browser origins (default-deny; never a wildcard in production) |
+| `TERMDAT_MCP_CORS_ORIGINS` | `[]` | HTTP only: explicit allowed browser origins (default-deny; never a wildcard in production). Comma-separated, e.g. `https://a.example,https://b.example` |
+| `TERMDAT_MCP_ALLOWED_HOSTS` | `[]` | HTTP only: inbound `Host` allow-list. Comma-separated, e.g. `mcp.example.ch,mcp.example.ch:443`. Needed for a **non-loopback bind** — without it the `Host` header is not checked at all |
 | `TERMDAT_MCP_LOG_LEVEL` | `INFO` | structlog level (JSON to stderr) |
 | `TERMDAT_MCP_VOCAB_TTL` | `86400` | Vocabulary cache TTL in seconds |
 
 Configuration is loaded once into a typed `Settings` object (pydantic-settings).
+
+**List variables.** `TERMDAT_MCP_CORS_ORIGINS` and `TERMDAT_MCP_ALLOWED_HOSTS`
+take a **comma-separated list** — the recommended spelling, and the one the
+rest of the Swiss Public Data MCP portfolio uses:
+
+```bash
+TERMDAT_MCP_ALLOWED_HOSTS="mcp.example.ch,mcp.example.ch:443"
+```
+
+A JSON list (`["mcp.example.ch"]`) stays valid. Surrounding whitespace and
+empty entries are dropped in both forms, so a trailing comma is harmless. A
+single value needs no brackets.
+
+**`TERMDAT_MCP_ALLOWED_HOSTS` matters in the cloud.** The SDK leaves
+DNS-rebinding protection off while no allow-list is configured. Bind to
+`0.0.0.0` in a container without this variable and the `Host` header is never
+validated — the server cannot derive its own public name from the bind address,
+and a guessed list would reject every real request with HTTP 421. It warns on
+startup when it has to fall back to that state.
 
 Cloud (Render / Railway):
 

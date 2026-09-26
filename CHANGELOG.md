@@ -6,6 +6,17 @@ versioning follows [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Geändert — ruff-Regelsatz explizit
+
+`[tool.ruff.lint]` legt den Regelsatz jetzt fest (`E, F, W, I, UP`, ohne
+`E501`), wie in den übrigen Servern des Portfolios. Bisher fehlte `select`, und
+damit galt ruffs Default — der mit ruff 0.16 von 59 auf 413 Regeln gewachsen
+ist (gemessen: 0.15.8 aktiviert E4/E7/E9/F, 0.16.x zusätzlich B, SIM, RUF, PL,
+DTZ und weitere). Welche Regeln galten, bestimmte damit der ruff-Pin, nicht das
+Projekt; der nächste Bump hätte die CI ohne Codeänderung umdeuten können. Der
+heutige Code besteht den festgelegten Satz ohne Befund, gemessen mit dem
+gepinnten ruff 0.16.5.
+
 Zwei Befunde aus dem Railway-Deployment vom 20.09.2026, beide gegen den
 laufenden Server gemessen und offline nachgestellt.
 
